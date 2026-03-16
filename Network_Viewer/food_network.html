@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Food Network View</title>
+  <style>
+    :root { --bg:#f5f7fb; --panel:#fff; --border:#d7dce6; --text:#1f2430; --muted:#5f6b85; --shadow:0 10px 24px rgba(17,24,39,.08); }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { max-width:1600px; margin:0 auto; padding:18px; }
+    h1 { margin:0 0 8px; font-size:28px; }
+    .sub { color:var(--muted); margin:0 0 16px; line-height:1.45; }
+    .layout { display:grid; grid-template-columns:420px 1fr; gap:18px; align-items:start; }
+    .panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); }
+    .controls { padding:16px; position:sticky; top:16px; }
+    .section + .section { margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+    .section h2 { margin:0 0 10px; font-size:16px; }
+    .hint { color:var(--muted); font-size:13px; line-height:1.45; margin:0 0 10px; }
+    textarea { width:100%; min-height:260px; resize:vertical; border:1px solid var(--border); border-radius:12px; padding:10px 12px; font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:#fff; }
+    input[type="number"], input[type="search"] { width:100%; border:1px solid var(--border); border-radius:10px; padding:9px 10px; font:inherit; background:#fff; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+    .checks { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .check { display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px; background:#fafbfe; }
+    .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    button { appearance:none; border:1px solid var(--border); background:#fff; color:var(--text); padding:10px 14px; border-radius:10px; cursor:pointer; font:inherit; font-weight:700; }
+    button.primary { background:#1f2430; border-color:#1f2430; color:#fff; }
+    .status { margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:#f7f8fc; font-size:13px; color:var(--muted); white-space:pre-wrap; }
+    .viewer { padding:14px; }
+    .topbar { display:grid; grid-template-columns:1fr 320px; gap:12px; margin-bottom:12px; }
+    .toolbar { display:flex; gap:8px; align-items:center; }
+    .stats,.details { border:1px solid var(--border); border-radius:12px; background:#fff; padding:10px 12px; }
+    .stats { color:var(--muted); font-size:13px; line-height:1.45; }
+    .details { margin-top:12px; min-height:130px; }
+    .details h3 { margin:0 0 6px; font-size:16px; }
+    .details .meta { color:var(--muted); font-size:13px; line-height:1.5; }
+    .chip { display:inline-block; padding:4px 9px; margin:6px 6px 0 0; border:1px solid var(--border); border-radius:999px; background:#fafbfe; font-size:12px; }
+    #canvasWrap { position:relative; height:840px; border:1px solid var(--border); border-radius:14px; overflow:hidden; background:linear-gradient(180deg,#fcfcfe 0%,#f8f9fc 100%); }
+    canvas { display:block; width:100%; height:100%; }
+    .legend { position:absolute; top:12px; right:12px; background:rgba(255,255,255,.92); border:1px solid var(--border); border-radius:12px; padding:8px 10px; font-size:12px; backdrop-filter:blur(4px); max-width:220px; }
+    .legend-row { display:flex; align-items:center; gap:8px; margin:4px 0; }
+    .swatch { width:10px; height:10px; border-radius:50%; }
+    @media (max-width:1200px){ .layout{grid-template-columns:1fr;} .controls{position:static;} .topbar{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Food Network Viewer</h1>
+    <p class="sub">Paste your tab-separated food table, pick which feature families to include, and render an offline network. This file uses no external libraries, so it opens locally in a browser.</p>
+    <div class="layout">
+      <div class="panel controls">
+        <div class="section">
+          <h2>1) Paste your table</h2>
+          <p class="hint">Paste the full table exactly as tab-separated text, including the header row. Each food row becomes a sample node. To avoid a giant hairball, the graph only links each sample to its strongest selected features.</p>
+          <textarea id="tsvInput"></textarea>
+          <div class="btns"><button id="loadSampleBtn">Load example rows</button><button id="clearBtn">Clear</button></div>
+        </div>
+        <div class="section">
+          <h2>2) Pick what to show</h2>
+          <div class="grid2">
+            <div><label for="topNInput">Top features per sample</label><input id="topNInput" type="number" min="1" max="20" step="1" value="5" /></div>
+            <div><label for="minValueInput">Minimum value</label><input id="minValueInput" type="number" min="0" step="0.01" value="0.5" /></div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="showPrimary" checked /> Primary group</label>
+            <label class="check"><input type="checkbox" id="showSecondary" checked /> Secondary group</label>
+            <label class="check"><input type="checkbox" id="showProcessing" checked /> Processing</label>
+            <label class="check"><input type="checkbox" id="showFatty" checked /> Fatty acids / lipids</label>
+            <label class="check"><input type="checkbox" id="showCarbs" checked /> Carbs / fibers / sugars</label>
+            <label class="check"><input type="checkbox" id="showMinerals" checked /> Minerals</label>
+            <label class="check"><input type="checkbox" id="showAmino" checked /> Amino acids</label>
+            <label class="check"><input type="checkbox" id="showMacros" checked /> Macros</label>
+          </div>
+          <div class="btns"><button id="renderBtn" class="primary">Render network</button></div>
+        </div>
+        <div class="section">
+          <h2>3) Search</h2>
+          <label for="searchInput">Find node by name</label>
+          <input id="searchInput" type="search" placeholder="artichoke, Omega-3, Legumes..." />
+          <div class="btns"><button id="searchBtn">Find</button><button id="resetBtn">Reset view</button></div>
+        </div>
+        <div class="section"><h2>Status</h2><div id="status" class="status">Ready.</div></div>
+      </div>
+      <div class="panel viewer">
+        <div class="topbar"><div class="toolbar hint">Drag nodes. Mouse wheel zooms. Drag empty space to pan. Click a node for details.</div><div id="stats" class="stats">No graph yet.</div></div>
+        <div id="canvasWrap"><canvas id="graphCanvas"></canvas><div class="legend" id="legend"></div></div>
+        <div id="details" class="details"><h3>Node details</h3><div class="meta">Click a node to inspect its metadata.</div></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const SAMPLE_TSV = `No.	Sample Name	Globally Unique Sample ID	Food Group Primary	Food Group Secondary	Processing	Lipid	Protein	Carbohydrate	Water
+16	artichoke	GGB100178	Vegetables	Vegetable	Whole/Raw	0.45719	3.887043	12.68841955	81.49027
+21	black olive (canned)	GGB100197	Fruits	Fruit	Processed	8.037159	0.897806	6.713793	82.04388
+13	huckleberry	GGB101493	Fruits	Fruits	Whole/Raw	2.2183	1.00041	18.18788742	78.25196
+18	kale lacinato leaf (raw)	GGB102192	Vegetables	Vegetable	Whole/Raw	0.312795	2.57049	5.733535	89.67675
+20	pumpkin (canned)	GGB100072	Vegetables	Vegetable	Processed	0.263008	0.858981	7.167619	91.14453
+19	Sweet potato	GGB100043	Vegetables	Tuber	Cooked	0.230823	0.831793	19.02103	79.20518
+15	red dragon fruit (raw)	GGB101520	Fruits	Fruits	Whole/Raw	0.071578	0.770004	9.593603	89.15487
+14	sour cherry	GGB101501	Fruits	Fruits	Whole/Raw	0.052974	1.245596	12.49318593	85.6828`;
+
+    const COLORS = {
+      sample:'#1f77b4',
+      primary:'#ff7f0e',
+      secondary:'#9467bd',
+      processing:'#8c564b',
+      fatty:'#d62728',
+      carbs:'#2ca02c',
+      minerals:'#17becf',
+      amino:'#bcbd22',
+      macros:'#7f7f7f'
+    };
+
+    const FAMILY_LABELS = {
+      sample:'Food sample',
+      primary:'Primary group',
+      secondary:'Secondary group',
+      processing:'Processing',
+      fatty:'Fatty acids / lipids',
+      carbs:'Carbs / fibers / sugars',
+      minerals:'Minerals',
+      amino:'Amino acids',
+      macros:'Macros'
+    };
+
+    const META_COLUMNS = new Set([
+      'No.',
+      'Sample Name',
+      'Globally Unique Sample ID',
+      'Food Group Primary',
+      'Food Group Secondary',
+      'Processing'
+    ]);
+
+    const AMINO_COLS = new Set([
+      'Alanine','Arginine','Asparagine','Aspartic acid','Cysteine','Glutamic acid',
+      'Glutamine','Glycine','Histidine','Isoleucine','Leucine','Lysine','Methionine',
+      'Phenylalanine','Proline','Serine','Threonine','Tryptophan','Tyrosine','Valine'
+    ]);
+
+    const MINERAL_COLS = new Set([
+      'Aluminum','Arsenic','Barium','Beryllium','Boron','Cadmium','Calcium','Chromium',
+      'Cobalt','Copper','Iron','Lead','Lithium','Magnesium','Manganese','Minerals',
+      'Molybdenum','Nickel','Other Ash','Phosphorus','Potassium','Selenium','Sodium',
+      'Strontium','Sulfur','Tungsten','Vanadium','Zinc'
+    ]);
+
+    const MACRO_COLS = new Set(['Ash','Carbohydrate','Protein','Water']);
+
+    function familyOfColumn(col){
+      if (AMINO_COLS.has(col)) return 'amino';
+      if (MINERAL_COLS.has(col)) return 'minerals';
+      if (MACRO_COLS.has(col)) return 'macros';
+
+      if (
+        col==='Fibers' || col==='Fructose' || col==='Fucose' || col==='GalA' ||
+        col==='Galactose' || col==='GalN' || col==='GalNAc' || col==='GlcA' ||
+        col==='GlcN' || col==='GlcNAc' || col==='Glucose' || col==='Glycogen' ||
+        col==='IdoA' || col==='Mannose' || col==='Rhamnose' || col==='Ribose' ||
+        col==='Starch' || col==='Sugar and cellulose' || col==='Xylose' ||
+        col.includes('Arabinose') || col.includes('Xylose') || col.includes('Galactose') ||
+        col.includes('Glucose') || col.includes('Mannose') || col.includes('Rhamnose') ||
+        col==='Allose' || col==='Apiose'
+      ) return 'carbs';
+
+      if (
+        col==='Lipid' || col==='Monounsaturated' || col==='Omega-3' ||
+        col==='Omega-6' || col==='Saturated' || col==='Trans' ||
+        col==='Branched' || /^a?i?FA\d/.test(col) || /^FA\d/.test(col)
+      ) return 'fatty';
+
+      return null;
+    }
+
+    function parseTSV(text){
+      const lines = text.replace(/\r/g,'').split('\n').filter(line => line.trim().length > 0);
+      if (lines.length < 2) throw new Error('Need a header row and at least one data row.');
+
+      const headers = lines[0].split('\t').map(h => h.trim());
+      const rows = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const cells = lines[i].split('\t');
+        while (cells.length < headers.length) cells.push('');
+        const row = {};
+        headers.forEach((h, idx) => row[h] = (cells[idx] || '').trim());
+        rows.push(row);
+      }
+
+      return { headers, rows };
+    }
+
+    function parseNumber(v){
+      if (v == null) return null;
+      const s = String(v).trim();
+      if (!s || s.toUpperCase() === 'NA') return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function selectedFamilies(){
+      return {
+        primary: showPrimary.checked,
+        secondary: showSecondary.checked,
+        processing: showProcessing.checked,
+        fatty: showFatty.checked,
+        carbs: showCarbs.checked,
+        minerals: showMinerals.checked,
+        amino: showAmino.checked,
+        macros: showMacros.checked
+      };
+    }
+
+    function buildNetwork(parsed){
+  const picks = selectedFamilies();
+  const topN = Math.max(1, Number(topNInput.value) || 5);
+  const minValue = Math.max(0, Number(minValueInput.value) || 0);
+  const nodeMap = new Map();
+  const links = [];
+
+  function addNode(id, kind, label, meta = {}){
+    if (!nodeMap.has(id)) {
+      nodeMap.set(id, {
+        id,
+        kind,
+        label,
+        meta,
+        x: 150 + Math.random() * Math.max(300, canvas.width / (window.devicePixelRatio || 1) - 300),
+        y: 100 + Math.random() * Math.max(300, canvas.height / (window.devicePixelRatio || 1) - 200),
+        vx: 0,
+        vy: 0,
+        radius: kind === 'sample' ? 12 : 9,
+        fixed: false,
+        abundanceSum: 0,
+        abundanceCount: 0,
+        abundanceMean: 0
+      });
+    }
+    return nodeMap.get(id);
+  }
+
+  for (const row of parsed.rows) {
+    const sampleName = row['Sample Name'] || row['Globally Unique Sample ID'] || 'Unnamed sample';
+    const sampleId = row['Globally Unique Sample ID'] || sampleName;
+    const primary = (row['Food Group Primary'] || '').trim();
+    const secondary = (row['Food Group Secondary'] || '').trim();
+    const processing = (row['Processing'] || '').trim();
+
+    const sampleNode = addNode(
+      'sample:' + sampleId,
+      'sample',
+      sampleName,
+      {
+        sample_name: sampleName,
+        unique_id: sampleId,
+        primary_group: primary,
+        secondary_group: secondary,
+        processing,
+        protein: parseNumber(row['Protein']),
+        carbohydrate: parseNumber(row['Carbohydrate']),
+        water: parseNumber(row['Water']),
+        lipid: parseNumber(row['Lipid'])
+      }
+    );
+
+    if (picks.primary && primary) {
+      const t = addNode('primary:' + primary, 'primary', primary, { primary_group: primary });
+      links.push({ source: sampleNode, target: t, value: 1, relation: 'primary group' });
+    }
+
+    if (picks.secondary && secondary) {
+      const t = addNode('secondary:' + secondary, 'secondary', secondary, { secondary_group: secondary });
+      links.push({ source: sampleNode, target: t, value: 1, relation: 'secondary group' });
+    }
+
+    if (picks.processing && processing) {
+      const t = addNode('processing:' + processing, 'processing', processing, { processing });
+      links.push({ source: sampleNode, target: t, value: 1, relation: 'processing' });
+    }
+
+    const features = [];
+    for (const col of parsed.headers) {
+      if (META_COLUMNS.has(col)) continue;
+      const family = familyOfColumn(col);
+      if (!family || !picks[family]) continue;
+      const value = parseNumber(row[col]);
+      if (value == null || value < minValue) continue;
+      features.push({ col, family, value });
+    }
+
+    features.sort((a, b) => b.value - a.value);
+
+    for (const f of features.slice(0, topN)) {
+      const t = addNode(
+        f.family + ':' + f.col,
+        f.family,
+        f.col,
+        { feature: f.col, family: f.family }
+      );
+
+      links.push({
+        source: sampleNode,
+        target: t,
+        value: f.value,
+        relation: 'contains',
+        column: f.col
+      });
+
+      // accumulate abundance for sizing
+      sampleNode.abundanceSum += f.value;
+      sampleNode.abundanceCount += 1;
+
+      t.abundanceSum += f.value;
+      t.abundanceCount += 1;
+    }
+  }
+
+  // convert abundance into mean values
+  const nodes = [...nodeMap.values()];
+  for (const n of nodes) {
+    n.abundanceMean = n.abundanceCount > 0 ? n.abundanceSum / n.abundanceCount : 0;
+  }
+
+  // scale node radius from abundance
+  applyRadiusScaling(nodes);
+
+  return { nodes, links, topN, minValue };
+}
+
+function applyRadiusScaling(nodes) {
+  const sampleNodes = nodes.filter(n => n.kind === 'sample');
+  const featureNodes = nodes.filter(n =>
+    ['fatty', 'carbs', 'minerals', 'amino', 'macros'].includes(n.kind)
+  );
+
+  scaleRadiusGroup(sampleNodes, 10, 24, n => n.abundanceSum);
+  scaleRadiusGroup(featureNodes, 7, 18, n => n.abundanceMean);
+
+  // keep category-type nodes fixed
+  for (const n of nodes) {
+    if (['primary', 'secondary', 'processing'].includes(n.kind)) {
+      n.radius = 9;
+    }
+  }
+}
+
+function scaleRadiusGroup(nodes, minR, maxR, accessor) {
+  if (!nodes.length) return;
+
+  const vals = nodes.map(accessor).filter(v => Number.isFinite(v) && v > 0);
+  if (!vals.length) {
+    for (const n of nodes) n.radius = minR;
+    return;
+  }
+
+  const minVal = Math.min(...vals);
+  const maxVal = Math.max(...vals);
+
+  for (const n of nodes) {
+    const raw = accessor(n);
+    if (!Number.isFinite(raw) || raw <= 0) {
+      n.radius = minR;
+      continue;
+    }
+
+    const a = Math.log10(minVal + 1);
+    const b = Math.log10(maxVal + 1);
+    const x = Math.log10(raw + 1);
+
+    const t = b === a ? 0.5 : (x - a) / (b - a);
+    n.radius = minR + t * (maxR - minR);
+  }
+}
+    const canvas = document.getElementById('graphCanvas');
+    const wrap = document.getElementById('canvasWrap');
+    const ctx = canvas.getContext('2d');
+
+    const statusEl = document.getElementById('status');
+    const statsEl = document.getElementById('stats');
+    const detailsEl = document.getElementById('details');
+    const legendEl = document.getElementById('legend');
+    const tsvInput = document.getElementById('tsvInput');
+
+    let graph = { nodes: [], links: [] };
+    let hovered = null;
+    let selected = null;
+    let dragNode = null;
+    let draggingCanvas = false;
+    let lastMouse = { x: 0, y: 0 };
+    let transform = { x: 0, y: 0, scale: 1 };
+    let anim = null;
+
+    function resizeCanvas(){
+      const rect = wrap.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    function setStatus(msg){
+      statusEl.textContent = msg;
+    }
+
+    function updateLegend(){
+      legendEl.innerHTML = Object.keys(FAMILY_LABELS)
+        .map(key => `<div class="legend-row"><span class="swatch" style="background:${COLORS[key]}"></span><span>${FAMILY_LABELS[key]}</span></div>`)
+        .join('');
+    }
+
+    function updateStats(meta){
+      const counts = graph.nodes.reduce((a, n) => ((a[n.kind] = (a[n.kind] || 0) + 1), a), {});
+      statsEl.innerHTML = [
+        `<strong>${graph.nodes.length}</strong> nodes`,
+        `<strong>${graph.links.length}</strong> links`,
+        meta ? `Top <strong>${meta.topN}</strong> features per sample, min value <strong>${meta.minValue}</strong>` : '',
+        counts.sample ? `<strong>${counts.sample}</strong> samples` : '',
+        counts.primary ? `<strong>${counts.primary}</strong> primary groups` : '',
+        counts.secondary ? `<strong>${counts.secondary}</strong> secondary groups` : '',
+        counts.processing ? `<strong>${counts.processing}</strong> processing types` : ''
+      ].filter(Boolean).join('<br>');
+    }
+
+    function screenToWorld(sx, sy){
+      return {
+        x: (sx - transform.x) / transform.scale,
+        y: (sy - transform.y) / transform.scale
+      };
+    }
+
+    function hitNode(wx, wy){
+      for (let i = graph.nodes.length - 1; i >= 0; i--) {
+        const n = graph.nodes[i];
+        const dx = wx - n.x;
+        const dy = wy - n.y;
+        if (dx * dx + dy * dy <= (n.radius + 5) * (n.radius + 5)) return n;
+      }
+      return null;
+    }
+
+    function connectedNodeIds(node){
+      const set = new Set([node.id]);
+      const linkSet = new Set();
+      for (const link of graph.links) {
+        if (link.source.id === node.id || link.target.id === node.id) {
+          set.add(link.source.id);
+          set.add(link.target.id);
+          linkSet.add(link);
+        }
+      }
+      return { nodes: set, links: linkSet };
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#39;');
+    }
+
+    function showDetails(node){
+      const metaEntries = Object.entries(node.meta || {}).filter(([,v]) => v !== null && v !== '' && v !== undefined);
+      detailsEl.innerHTML = `<h3>${escapeHtml(node.label)}</h3><div class="meta">Type: <strong>${escapeHtml(FAMILY_LABELS[node.kind] || node.kind)}</strong></div><div class="meta" style="margin-top:8px;">${metaEntries.length ? metaEntries.map(([k,v]) => `<span class="chip"><strong>${escapeHtml(k)}</strong>: ${escapeHtml(String(v))}</span>`).join('') : 'No extra metadata.'}</div>`;
+    }
+
+    function showIntroDetails(){
+      detailsEl.innerHTML = '<h3>Node details</h3><div class="meta">Click a node to inspect its metadata.</div>';
+    }
+
+    function draw(){
+      const rect = wrap.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      ctx.save();
+      ctx.translate(transform.x, transform.y);
+      ctx.scale(transform.scale, transform.scale);
+
+      let highlight = null;
+      if (hovered || selected) highlight = connectedNodeIds(hovered || selected);
+
+      for (const link of graph.links) {
+        const active = !highlight || highlight.links.has(link);
+        ctx.beginPath();
+        ctx.moveTo(link.source.x, link.source.y);
+        ctx.lineTo(link.target.x, link.target.y);
+        ctx.lineWidth = Math.max(1, Math.log10((link.value || 1) + 1) * 2);
+        ctx.strokeStyle = active ? 'rgba(120,130,150,0.75)' : 'rgba(180,186,198,0.12)';
+        ctx.stroke();
+      }
+
+      for (const node of graph.nodes) {
+        const active = !highlight || highlight.nodes.has(node.id);
+        const color = COLORS[node.kind] || '#888';
+        const r = node.radius + (((hovered && hovered.id === node.id) || (selected && selected.id === node.id)) ? 4 : 0);
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = active ? color : 'rgba(205,210,220,0.25)';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = active ? '#ffffff' : 'rgba(255,255,255,0.4)';
+        ctx.stroke();
+      }
+
+      ctx.font = '12px sans-serif';
+      ctx.textBaseline = 'middle';
+      for (const node of graph.nodes) {
+        const active = !highlight || highlight.nodes.has(node.id);
+        ctx.fillStyle = active ? '#1f2430' : 'rgba(31,36,48,0.25)';
+        ctx.fillText(node.label, node.x + node.radius + 6, node.y);
+      }
+
+      ctx.restore();
+    }
+
+    function step(){
+      const nodes = graph.nodes;
+      const links = graph.links;
+
+      if (!nodes.length) {
+        draw();
+        anim = requestAnimationFrame(step);
+        return;
+      }
+
+      const centerX = (wrap.clientWidth / transform.scale) / 2 - transform.x / transform.scale;
+      const centerY = (wrap.clientHeight / transform.scale) / 2 - transform.y / transform.scale;
+
+      for (const n of nodes) {
+        if (!n.fixed) {
+          n.vx += (centerX - n.x) * 0.0002;
+          n.vy += (centerY - n.y) * 0.0002;
+        }
+      }
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const dist2 = dx * dx + dy * dy + 0.01;
+          const dist = Math.sqrt(dist2);
+          let force = 1600 / dist2;
+          if (a.kind === 'sample' && b.kind === 'sample') force *= 1.7;
+          const fx = (dx / dist) * force, fy = (dy / dist) * force;
+          if (!a.fixed) { a.vx -= fx; a.vy -= fy; }
+          if (!b.fixed) { b.vx += fx; b.vy += fy; }
+        }
+      }
+
+      for (const link of links) {
+        const a = link.source, b = link.target;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const desired = (a.kind === 'sample' || b.kind === 'sample') ? 100 : 80;
+        const spring = (dist - desired) * 0.0025;
+        const fx = (dx / dist) * spring, fy = (dy / dist) * spring;
+        if (!a.fixed) { a.vx += fx; a.vy += fy; }
+        if (!b.fixed) { b.vx -= fx; b.vy -= fy; }
+      }
+
+      for (const n of nodes) {
+        if (!n.fixed) {
+          n.vx *= 0.86;
+          n.vy *= 0.86;
+          n.x += n.vx;
+          n.y += n.vy;
+        }
+      }
+
+      draw();
+      anim = requestAnimationFrame(step);
+    }
+
+    function renderFromInput(){
+      try {
+        const parsed = parseTSV(tsvInput.value);
+        graph = buildNetwork(parsed);
+        selected = null;
+        hovered = null;
+        updateStats(graph);
+        showIntroDetails();
+        setStatus(`Rendered ${graph.nodes.length} nodes and ${graph.links.length} links from ${parsed.rows.length} food samples.`);
+      } catch (err) {
+        setStatus('Could not render graph.\n' + err.message);
+      }
+    }
+
+    function resetView(){
+      transform = { x: 0, y: 0, scale: 1 };
+      selected = null;
+      hovered = null;
+      showIntroDetails();
+      draw();
+      setStatus('View reset.');
+    }
+
+    function findNodeByQuery(q){
+      const query = q.trim().toLowerCase();
+      if (!query) return null;
+      return graph.nodes.find(n => n.label.toLowerCase().includes(query));
+    }
+
+    function focusNode(node){
+      selected = node;
+      showDetails(node);
+      transform.x = wrap.clientWidth / 2 - node.x * transform.scale;
+      transform.y = wrap.clientHeight / 2 - node.y * transform.scale;
+      draw();
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      const rect = canvas.getBoundingClientRect();
+      const p = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+      const n = hitNode(p.x, p.y);
+      lastMouse = { x: e.clientX, y: e.clientY };
+      if (n) {
+        dragNode = n;
+        dragNode.fixed = true;
+        selected = n;
+        showDetails(n);
+      } else {
+        draggingCanvas = true;
+      }
+      draw();
+    });
+
+    window.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      const p = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+      if (dragNode) {
+        dragNode.x = p.x;
+        dragNode.y = p.y;
+        dragNode.vx = 0;
+        dragNode.vy = 0;
+      } else if (draggingCanvas) {
+        transform.x += e.clientX - lastMouse.x;
+        transform.y += e.clientY - lastMouse.y;
+        lastMouse = { x: e.clientX, y: e.clientY };
+      } else {
+        hovered = hitNode(p.x, p.y);
+      }
+      draw();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (dragNode) dragNode.fixed = false;
+      dragNode = null;
+      draggingCanvas = false;
+    });
+
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+      const wx = (sx - transform.x) / transform.scale, wy = (sy - transform.y) / transform.scale;
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+      transform.scale = Math.max(0.35, Math.min(3.5, transform.scale * factor));
+      transform.x = sx - wx * transform.scale;
+      transform.y = sy - wy * transform.scale;
+      draw();
+    }, { passive:false });
+
+    renderBtn.addEventListener('click', renderFromInput);
+
+    loadSampleBtn.addEventListener('click', () => {
+      tsvInput.value = SAMPLE_TSV;
+      setStatus('Loaded example TSV rows. Replace them with your full table when ready.');
+    });
+
+    clearBtn.addEventListener('click', () => {
+      tsvInput.value = '';
+      setStatus('Cleared pasted table.');
+    });
+
+    resetBtn.addEventListener('click', resetView);
+
+    searchBtn.addEventListener('click', () => {
+      const node = findNodeByQuery(searchInput.value);
+      if (!node) {
+        setStatus('No matching node found.');
+        return;
+      }
+      focusNode(node);
+      setStatus('Found node: ' + node.label);
+    });
+
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') searchBtn.click();
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    updateLegend();
+    tsvInput.value = SAMPLE_TSV;
+    resizeCanvas();
+    if (anim) cancelAnimationFrame(anim);
+    anim = requestAnimationFrame(step);
+    renderFromInput();
+  </script>
+</body>
+</html>
