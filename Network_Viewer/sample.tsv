@@ -1,0 +1,6 @@
+No.\tSample Name\tGlobally Unique Sample ID\tFood Group Primary\tFood Group Secondary\tProcessing\tLipid\tOmega-3\tOmega-6\tSaturated\tFibers\tFructose\tGlucose\tMinerals\tPotassium\tIron\tAlanine\tGlutamic acid\tProtein\tCarbohydrate\tWater
+16\tartichoke\tGGB100178\tVegetables\tVegetable\tWhole/Raw\t0.45719\t0.011106\t0.236925\t0.135121\t1.322354\t0.162812\t11.3649739\t0.600641\t0.876436\t0.000503\t0.303967\t0.269372\t3.887043\t12.68841955\t81.49027
+24\tbison meat (cooked)\tGGB100283\tAnimal Products\tRed meat\tCooked\t17.31826792\t0.295768\t1.135538\t7.684684\t0.599458\t0.060051\t0.477507\t0.794876\t0.678682\t0.009982\t2.305722\t3.336516\t33.90767918\t1.473558\t47.1843
+1\tblackeyed pea\tGGB100438\tLegumes\tLegumes\tWhole/Raw\t1.874884\t0.166246\t0.637276\t0.664983\t6.905483\t0.5838\t38.25501661\t2.042977\t1.12493\t0.002568\t1.283085\t1.567588\t18.84119601\t68.47481728\t7.641196
+26\tcheddar cheese (sharp)\tGGB100173\tAnimal Products\tDairy\tProcessed\t28.1000438\t0.185458\t0.831362\t19.23004818\t0.524973\t0.040161\t8.467105\t1.572554\t1.861612\t0.465563\t1.49156\t1.858031\t23.34209374\t9.074639\t36.04906
+9\tfreekeh (cooked)\tGGB100340\tGrains\tWholegrain\tCooked\t2.037393\t0.369574\t1.070816\t0.521194\t7.092972\t0.22525\t59.45398295\t0.677552\t0.734409\t0.001516\t1.003629\t0.844628\t11.27673569\t80.03639\t5.237515

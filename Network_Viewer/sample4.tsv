@@ -1,0 +1,12 @@
+No.	Sample Name	Globally Unique Sample ID	Food Group Primary	Food Group Secondary	Processing	Lipid	Protein	Carbohydrate	Water
+1	blackeyed pea	GGB100438	Legumes	Legumes	Whole/Raw	1.874884	18.84119601	68.47481728	7.641196
+4	brown lentil (cooked)	GGB100045	Legumes	Legumes	Cooked	0.663897	8.585472	24.62327	65.241
+3	chickpea	GGB100039	Legumes	Legumes	Cooked	3.267121	6.654591	24.72463648	64.60324
+2	edamame pod (raw)	GGB100069	Legumes	Legumes	Whole/Raw	5.779708	11.03216374	10.53356725	71.34503
+5	extra firm tofu (raw)	GGB100183	Legumes	Soy	Processed	5.447442	10.15962395	1.705948	81.89015
+9	freekeh (cooked)	GGB100340	Grains	Wholegrain	Cooked	2.037393	11.27673569	80.03639	5.237515
+8	quinoa seed (dried, cooked)	GGB100360	Grains	pseudocereal	Whole/Raw	5.363806	14.45896	71.00746269	6.716418
+11	steel cut oats	GGB100066	Grains	Wholegrain	Processed	9.954269	12.36151105	68.96421953	7.056308
+10	White rice (cooked)	GGB102212	Grains	Refined grain	Cooked	1.227833	2.71856	25.90697635	70.12572
+7	whole grain bulgur wheat	GGB100576	Grains	Wholegrain	Whole/Raw	1.836172	11.44147239	77.62669939	7.730061
+12	oat milk	GGB101609	Grains	cereal-based milk	Processed	4.6795	1.062075	5.697475	87.75
