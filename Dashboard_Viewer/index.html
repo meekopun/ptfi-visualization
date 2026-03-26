@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Chickpea Atlas</title>
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --paper: #fffdf9;
+        --card: #ffffff;
+        --ink: #223026;
+        --muted: #5d675f;
+        --line: #e7ddcf;
+        --gold: #9d7335;
+        --gold-deep: #7b5824;
+        --green: #6d8d59;
+        --green-soft: #edf4e8;
+        --warm: #fbf6ed;
+        --shadow: 0 14px 38px rgba(34, 48, 38, 0.08);
+        --radius: 24px;
+        --max: 1320px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        color: var(--ink);
+        line-height: 1.68;
+        background:
+          radial-gradient(circle at 85% 0%, rgba(157, 115, 53, 0.16), transparent 25%),
+          radial-gradient(circle at 0% 10%, rgba(109, 141, 89, 0.1), transparent 22%),
+          var(--bg);
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      code {
+        background: #f6efe3;
+        border: 1px solid var(--line);
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 0.92em;
+      }
+
+      .container {
+        width: min(var(--max), calc(100% - 30px));
+        margin: auto;
+      }
+
+      .hero {
+        padding: 36px 0 24px;
+      }
+
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 34px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 237, 0.96));
+        border: 1px solid rgba(157, 115, 53, 0.16);
+        box-shadow: var(--shadow);
+        padding: 38px 34px;
+      }
+
+      .hero-card::after {
+        content: "";
+        position: absolute;
+        right: -110px;
+        top: -110px;
+        width: 330px;
+        height: 330px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(157, 115, 53, 0.18), rgba(157, 115, 53, 0));
+        pointer-events: none;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(157, 115, 53, 0.1);
+        border: 1px solid rgba(157, 115, 53, 0.16);
+        color: var(--gold-deep);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.13em;
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.35fr 0.92fr;
+        gap: 26px;
+        align-items: start;
+      }
+
+      h1 {
+        margin: 0 0 14px;
+        font-size: clamp(2.7rem, 6vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.055em;
+        max-width: 9.4ch;
+      }
+
+      .hero-deck {
+        margin: 0;
+        max-width: 72ch;
+        color: var(--muted);
+        font-size: 1.08rem;
+      }
+
+      .hero-note,
+      .hero-panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px 18px;
+      }
+
+      .hero-note {
+        margin-top: 18px;
+      }
+
+      .hero-panel h3,
+      .hero-note h3 {
+        margin: 0 0 10px;
+        font-size: 1.06rem;
+      }
+
+      .hero-panel p,
+      .hero-note p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .hero-panel ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+
+      .hero-panel li + li {
+        margin-top: 6px;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        backdrop-filter: blur(14px);
+        background: rgba(246, 241, 232, 0.88);
+        border-bottom: 1px solid rgba(231, 221, 207, 0.95);
+      }
+
+      .nav-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        padding: 12px 0;
+        overflow-x: auto;
+      }
+
+      .brand {
+        white-space: nowrap;
+        font-weight: 800;
+        color: var(--gold-deep);
+      }
+
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .nav-links a {
+        padding: 9px 12px;
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 0.95rem;
+        font-weight: 650;
+      }
+
+      .nav-links a:hover {
+        background: rgba(157, 115, 53, 0.1);
+        color: var(--ink);
+      }
+
+      main {
+        padding: 26px 0 70px;
+      }
+
+      section {
+        margin-top: 42px;
+      }
+
+      .section-head {
+        margin-bottom: 20px;
+      }
+
+      .section-kicker {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 800;
+        color: var(--gold-deep);
+        margin-bottom: 8px;
+      }
+
+      h2 {
+        margin: 0 0 9px;
+        font-size: clamp(1.8rem, 3.2vw, 2.7rem);
+        letter-spacing: -0.035em;
+        line-height: 1.06;
+      }
+
+      .section-head p {
+        margin: 0;
+        max-width: 84ch;
+        color: var(--muted);
+      }
+
+      .intro-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .intro-card,
+      .takeaway-card,
+      .summary-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .intro-card h3,
+      .takeaway-card h3 {
+        margin: 0 0 10px;
+        font-size: 1.08rem;
+      }
+
+      .intro-card p,
+      .takeaway-card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .summary-label {
+        text-transform: uppercase;
+        letter-spacing: 0.11em;
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+
+      .summary-value {
+        font-size: 1.9rem;
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+        font-weight: 850;
+        margin-bottom: 8px;
+      }
+
+      .summary-card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .feature {
+        display: grid;
+        grid-template-columns: 1.25fr 0.85fr;
+        gap: 22px;
+        align-items: start;
+        margin-top: 20px;
+      }
+
+      .feature.reverse {
+        grid-template-columns: 0.85fr 1.25fr;
+      }
+
+      .feature.reverse .feature-text {
+        order: 1;
+      }
+
+      .feature.reverse .figure-card {
+        order: 2;
+      }
+
+      .feature-text {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        padding: 24px 22px;
+      }
+
+      .feature-text h3 {
+        margin: 0 0 10px;
+        font-size: 1.25rem;
+        letter-spacing: -0.02em;
+      }
+
+      .feature-text p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .feature-text p + p {
+        margin-top: 12px;
+      }
+
+      .feature-text .mini-note {
+        margin-top: 16px;
+        padding: 14px 15px;
+        background: var(--green-soft);
+        border: 1px solid rgba(109, 141, 89, 0.18);
+        border-radius: 16px;
+        color: var(--ink);
+      }
+
+      .feature-text .mini-note strong {
+        color: var(--green);
+      }
+
+      .two-up {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+        margin-top: 22px;
+      }
+
+      .figure-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .figure-card.featured {
+        border: 1px solid rgba(157, 115, 53, 0.22);
+      }
+
+      .plot-frame {
+        position: relative;
+        overflow: hidden;
+        cursor: zoom-in;
+        background:
+          linear-gradient(135deg, rgba(109, 141, 89, 0.08), rgba(157, 115, 53, 0.08)),
+          repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.78),
+            rgba(255, 255, 255, 0.78) 12px,
+            rgba(246, 238, 226, 0.78) 12px,
+            rgba(246, 238, 226, 0.78) 24px
+          );
+      }
+
+      .plot-frame.standard {
+        aspect-ratio: 16 / 10;
+      }
+
+      .plot-frame.wide {
+        aspect-ratio: 16 / 8;
+      }
+
+      .plot-frame.tall {
+        aspect-ratio: 16 / 9;
+      }
+
+      .plot-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #fff;
+      }
+
+      .missing {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        text-align: center;
+        padding: 18px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .zoom-chip {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(34, 48, 38, 0.78);
+        color: #fff;
+        font-size: 0.82rem;
+        font-weight: 750;
+      }
+
+      figure {
+        margin: 0;
+      }
+
+      figcaption {
+        padding: 18px 18px 20px;
+      }
+
+      figcaption strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 1.05rem;
+      }
+
+      figcaption p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      .full-stack {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .comparison-text {
+        background: var(--warm);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px 18px;
+        color: var(--ink);
+        margin-top: 14px;
+      }
+
+      .comparison-text strong {
+        color: var(--gold-deep);
+      }
+
+      .compare-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 22px;
+      }
+
+      .metric-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .metric-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .metric-top strong {
+        font-size: 1.08rem;
+        letter-spacing: -0.02em;
+      }
+
+      .rank-badge {
+        white-space: nowrap;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        color: var(--gold-deep);
+        background: rgba(157, 115, 53, 0.1);
+        border: 1px solid rgba(157, 115, 53, 0.16);
+      }
+
+      .metric-row {
+        display: grid;
+        grid-template-columns: 180px 1fr 68px;
+        gap: 10px;
+        align-items: center;
+        margin: 10px 0;
+        font-size: 0.94rem;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .metric-row.chickpea .metric-label {
+        font-weight: 800;
+        color: var(--ink);
+      }
+
+      .metric-track {
+        height: 12px;
+        background: #efe6d7;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .metric-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #d2ad70, var(--gold));
+      }
+
+      .metric-row.chickpea .metric-fill {
+        background: linear-gradient(90deg, var(--green), #86a56c);
+      }
+
+      .metric-value {
+        text-align: right;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .closing {
+        background: rgba(34, 48, 38, 0.04);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 22px 22px;
+        color: var(--muted);
+      }
+
+      .closing strong {
+        color: var(--ink);
+      }
+
+      .lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(18, 18, 15, 0.88);
+      }
+
+      .lightbox.open {
+        display: flex;
+      }
+
+      .lightbox-inner {
+        position: relative;
+        width: min(1450px, 100%);
+        max-height: 94vh;
+        background: #101010;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+      }
+
+      .lightbox img {
+        width: 100%;
+        max-height: 84vh;
+        object-fit: contain;
+        background: #101010;
+      }
+
+      .lightbox-caption {
+        padding: 16px 18px;
+        background: #171717;
+        color: #f4f4f4;
+        font-size: 0.97rem;
+        line-height: 1.6;
+      }
+
+      .lightbox-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        font-size: 1.35rem;
+        cursor: pointer;
+      }
+
+      @media (max-width: 1150px) {
+        .hero-grid,
+        .feature,
+        .feature.reverse,
+        .summary-grid,
+        .intro-grid,
+        .compare-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .feature.reverse .feature-text,
+        .feature.reverse .figure-card {
+          order: unset;
+        }
+      }
+
+      @media (max-width: 860px) {
+        .hero-grid,
+        .feature,
+        .feature.reverse,
+        .summary-grid,
+        .intro-grid,
+        .two-up,
+        .compare-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .container {
+          width: min(var(--max), calc(100% - 18px));
+        }
+
+        .hero-card {
+          padding: 28px 20px;
+        }
+
+        .plot-frame.wide,
+        .plot-frame.standard,
+        .plot-frame.tall {
+          aspect-ratio: 16 / 10;
+        }
+
+        .metric-row {
+          grid-template-columns: 130px 1fr 58px;
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container">
+        <div class="hero-card">
+          <div class="hero-grid">
+            <div>
+              <h1>The Chickpea Atlas</h1>
+              <p class="hero-deck">
+                A visual synthesis of chickpea composition, amino-acid distribution,
+                carbohydrate structure, lipid classes, mineral pattern, and cross-legume
+                similarity. Across the full set of figures, chickpeas resolve as a
+                carbohydrate-led legume with meaningful protein, modest fat, and a
+                distinct overall nutritional signature.
+              </p>
+              <div class="hero-note">
+                <h3>Overview</h3>
+                <p>
+                  The figures move from broad composition to detailed nutrient classes and
+                  then to comparison plots that position chickpea among other legumes in
+                  the dataset.
+                </p>
+              </div>
+            </div>
+
+            <aside class="hero-panel">
+              <h3>How the sections are organized</h3>
+              <p>
+                The page begins with overall composition, then separates protein,
+                carbohydrates, fat, minerals, and whole-profile signature. 
+              </p>
+              <ul>
+                <li>Composition establishes the main nutritional structure.</li>
+                <li>Protein, carbohydrate, fat, and mineral sections add internal detail.</li>
+                <li>Comparison plots show where chickpea sits relative to the other legumes.</li>
+                <li>Any figure can be opened in a larger view.</li>
+              </ul>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="nav">
+      <div class="container nav-inner">
+        <div class="brand">The Chickpea Atlas</div>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#protein">Protein</a>
+          <a href="#carbs">Carbohydrates</a>
+          <a href="#fat">Fat</a>
+          <a href="#minerals">Minerals</a>
+          <a href="#signature">Signature</a>
+          <a href="#ranking">Ranking</a>
+          <a href="#comparison">Comparison</a>
+          <a href="#takeaways">Takeaways</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <section id="overview">
+        <div class="section-head">
+          <div class="section-kicker">Overview</div>
+          <h2>Overall composition and macronutrient structure</h2>
+          <p>
+            Chickpea appears as a dense, carbohydrate-led legume with a substantial
+            protein fraction and a smaller fat component. The overall profile suggests
+            structural complexity rather than dominance by sugars or lipids. These
+            figures establish the main nutritional architecture before moving into
+            specific nutrient classes.
+          </p>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">Primary macro signal</div>
+            <div class="summary-value">Carbohydrate</div>
+            <p>
+              The largest share of the chickpea profile is associated with carbohydrates,
+              especially the more structural fractions.
+            </p>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Secondary macro signal</div>
+            <div class="summary-value">Protein</div>
+            <p>
+              Protein is not incidental in the profile and contributes materially to the
+              identity of the food.
+            </p>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Fat contribution</div>
+            <div class="summary-value">Modest</div>
+            <p>
+              Lipids are present but occupy a smaller share of the total composition than
+              carbohydrate or protein.
+            </p>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Whole-food pattern</div>
+            <div class="summary-value">Balanced</div>
+            <p>
+              The combined signal is coherent and stable rather than centered on a single
+              extreme nutrient feature.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <figure class="figure-card featured">
+            <div class="plot-frame wide" data-src="plots/proximate_composition.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/proximate_composition.png"
+                alt="Proximate composition plot for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>proximate_composition.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 1. Proximate composition</strong>
+              <p>
+                This figure provides the broadest view of chickpea composition by
+                separating the major components of the food. It functions as the
+                structural baseline for interpreting the rest of the dashboard.
+              </p>
+            </figcaption>
+          </figure>
+
+          <div class="feature-text">
+            <h3>Structural interpretation</h3>
+            <p>
+              The proximate composition view defines the main proportions of the chickpea
+              matrix. It shows that the food is organized around a large carbohydrate
+              base, reinforced by a notable protein fraction and a smaller lipid share.
+            </p>
+            <p>
+              This overall structure is consistent with chickpea functioning as a staple
+              legume: substantial, compositionally dense, and suitable for use as both a
+              protein source and a structured carbohydrate source.
+            </p>
+            <div class="mini-note">
+              <strong>Key point:</strong> chickpea is defined more by structural
+              macronutrients than by sugars or fat.
+            </div>
+          </div>
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/macro_donut.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/macro_donut.png"
+                alt="Macronutrient donut plot for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>macro_donut.png</strong> in the same folder as this HTML
+                file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 2. Macronutrient donut</strong>
+              <p>
+                The macronutrient donut condenses the broad macro balance into a single
+                view, highlighting the relative dominance of carbohydrate, the meaningful
+                contribution of protein, and the smaller role of fat.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/fingerprint_heatmap.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/fingerprint_heatmap.png"
+                alt="Fingerprint heatmap for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>fingerprint_heatmap.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 3. Fingerprint heatmap</strong>
+              <p>
+                The heatmap presents the broader nutrient pattern of chickpea as a single
+                visual fingerprint, showing which parts of the profile are relatively
+                stronger or weaker across the measured variables.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="protein">
+        <div class="section-head">
+          <div class="section-kicker">Protein and amino acids</div>
+          <h2>Amino-acid pattern and protein character</h2>
+          <p>
+            Total protein explains only part of the chickpea protein story. The amino-acid
+            figures add shape to that number by showing where the profile is broad, where
+            it is concentrated, and how the internal composition of the protein fraction
+            is distributed across individual amino acids.
+          </p>
+        </div>
+
+        <div class="feature reverse">
+          <div class="feature-text">
+            <h3>Protein profile interpretation</h3>
+            <p>
+              The amino-acid plots show that chickpea protein is not compositionally flat.
+              Instead, it has a structured pattern with clear peaks and smaller
+              components. This gives the protein fraction a distinct internal signature
+              rather than appearing as an undifferentiated total value.
+            </p>
+            <p>
+              Reading the profile as a pattern is more informative than reading it as a
+              single quantity, because it reveals how the protein component is assembled
+              within the whole food.
+            </p>
+            <div class="mini-note">
+              <strong>Key point:</strong> chickpea contains a broad, structured amino-acid
+              profile rather than a uniform one.
+            </div>
+          </div>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame wide" data-src="plots/amino_acid_profile.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/amino_acid_profile.png"
+                alt="Amino acid profile for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>amino_acid_profile.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 4. Amino acid profile</strong>
+              <p>
+                This figure shows the relative abundance of the individual amino acids and
+                identifies the most prominent and least prominent contributors within the
+                chickpea protein profile.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/amino_acid_radar.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/amino_acid_radar.png"
+                alt="Amino acid radar plot for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>amino_acid_radar.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 5. Amino acid radar</strong>
+              <p>
+                The radar view emphasizes overall profile geometry and is useful for
+                assessing the breadth and balance of the amino-acid pattern at a glance.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/amino_flower_plot.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/amino_flower_plot.png"
+                alt="Amino flower plot for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>amino_flower_plot.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 6. Amino flower plot</strong>
+              <p>
+                The flower plot expresses the amino-acid distribution as a visual shape,
+                making the internal structure of the protein profile easier to compare
+                across the components.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="carbs">
+        <div class="section-head">
+          <div class="section-kicker">Carbohydrates</div>
+          <h2>Carbohydrate structure and distribution</h2>
+          <p>
+            The carbohydrate fraction of chickpea is not a single homogeneous category.
+            The figures in this section separate starch, fiber, and smaller carbohydrate
+            fractions to show how the carbohydrate signal is assembled and why chickpea
+            behaves as a structured carbohydrate source rather than a sugar-led one.
+          </p>
+        </div>
+
+        <div class="feature">
+          <figure class="figure-card featured">
+            <div class="plot-frame wide" data-src="plots/carbohydrate_profile.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/carbohydrate_profile.png"
+                alt="Carbohydrate profile for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>carbohydrate_profile.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 7. Carbohydrate profile</strong>
+              <p>
+                This is the clearest detailed view of the carbohydrate distribution within
+                chickpea, separating the major fractions and showing which components
+                dominate the profile.
+              </p>
+            </figcaption>
+          </figure>
+
+          <div class="feature-text">
+            <h3>Carbohydrate interpretation</h3>
+            <p>
+              The carbohydrate profile indicates that chickpea is dominated by structured
+              fractions rather than by a simple sugar signal. This explains why its
+              composition is better described in terms of starch and matrix-building
+              carbohydrates.
+            </p>
+            <p>
+              The result is a profile consistent with a legume used for body, texture, and
+              sustained nutritional contribution rather than sweetness or rapidly absorbed
+              carbohydrate alone.
+            </p>
+            <div class="mini-note">
+              <strong>Key point:</strong> the carbohydrate story is primarily a
+              starch-and-fiber story.
+            </div>
+          </div>
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/carb_circular_lollipop.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/carb_circular_lollipop.png"
+                alt="Circular carbohydrate lollipop plot for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>carb_circular_lollipop.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 8. Circular carbohydrate lollipop</strong>
+              <p>
+                This circular format highlights the relative magnitude of the carbohydrate
+                components and makes dominant versus minor fractions easy to distinguish.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="fat">
+        <div class="section-head">
+          <div class="section-kicker">Fat and lipid classes</div>
+          <h2>Lipid composition and class distribution</h2>
+          <p>
+            Although chickpea is not dominated by fat, its lipid fraction still has
+            internal structure. The plots in this section distinguish between lipid
+            classes and show how the small total fat share is divided across the
+            underlying fatty-acid groups.
+          </p>
+        </div>
+
+        <div class="feature reverse">
+          <div class="feature-text">
+            <h3>Lipid interpretation</h3>
+            <p>
+              The lipid profile adds nuance to the broad composition view. Rather than
+              treating fat as a single total value, these figures show how that fraction
+              is internally partitioned and whether the signal is concentrated in
+              unsaturated, saturated, or mixed classes.
+            </p>
+            <p>
+              This section therefore contributes compositional detail even though the
+              absolute fat share is modest within the whole food.
+            </p>
+            <div class="mini-note">
+              <strong>Key point:</strong> the fat fraction is small, but its class
+              distribution remains informative.
+            </div>
+          </div>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame wide" data-src="plots/lipid_class_summary.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/lipid_class_summary.png"
+                alt="Lipid class summary for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>lipid_class_summary.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 9. Lipid class summary</strong>
+              <p>
+                This figure shows how the lipid signal is distributed across the measured
+                fatty-acid classes and serves as the main reference plot for interpreting
+                chickpea fat composition.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/fat_rose_chart.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/fat_rose_chart.png"
+                alt="Fat rose chart for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>fat_rose_chart.png</strong> in the same folder as this HTML
+                file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 10. Fat rose chart</strong>
+              <p>
+                The rose chart turns the lipid pattern into a radial form that emphasizes
+                relative prominence across the fat classes.
+              </p>
+            </figcaption>
+          </figure>
+
+        </div>
+      </section>
+
+      <section id="minerals">
+        <div class="section-head">
+          <div class="section-kicker">Minerals</div>
+          <h2>Mineral pattern within the broader fingerprint</h2>
+          <p>
+            The mineral plots add finer-resolution detail to the chickpea profile. They
+            show whether the mineral signal is spread across many components or
+            concentrated more heavily in a smaller subset, contributing an additional
+            layer to the whole-food picture.
+          </p>
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/mineral_profile.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/mineral_profile.png"
+                alt="Mineral profile for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>mineral_profile.png</strong> in the same folder as this HTML
+                file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 11. Mineral profile</strong>
+              <p>
+                This figure provides the main detailed view of the mineral distribution
+                measured in chickpea.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card">
+            <div class="plot-frame standard" data-src="plots/mineral_bubble_strip.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/mineral_bubble_strip.png"
+                alt="Mineral bubble strip for chickpeas"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>mineral_bubble_strip.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 12. Mineral bubble strip</strong>
+              <p>
+                The bubble-strip format emphasizes relative magnitude and makes the mineral
+                distribution easy to scan visually.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="signature">
+        <div class="section-head">
+          <div class="section-kicker">Whole-food signature</div>
+          <h2>Integrated profile across the full nutrient space</h2>
+          <p>
+            Not all of the chickpea signal is best understood through isolated nutrient
+            classes. Some figures summarize the full pattern directly and make it possible
+            to interpret chickpea as a single integrated food profile rather than a list
+            of parts.
+          </p>
+        </div>
+
+        <div class="feature">
+          <figure class="figure-card featured">
+            <div class="plot-frame wide" data-src="plots/chickpea_signature_skyline.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_signature_skyline.png"
+                alt="Chickpea signature skyline plot"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_signature_skyline.png</strong> in the same folder
+                as this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 13. Chickpea signature skyline</strong>
+              <p>
+                The skyline view condenses the full profile into an overall silhouette,
+                making the global shape of the chickpea signature easy to recognize.
+              </p>
+            </figcaption>
+          </figure>
+
+          <div class="feature-text">
+            <h3>Integrated interpretation</h3>
+            <p>
+              Summary figures are useful because they synthesize the information from the
+              earlier sections into a single coherent shape. Instead of requiring separate
+              interpretation of protein, carbohydrate, lipid, and mineral plots, they
+              show the collective structure of the food in one view.
+            </p>
+            <p>
+              In this dataset, chickpea retains a recognizable signature even when many
+              variables are combined, indicating that its overall profile is distinct
+              rather than diffuse.
+            </p>
+            <div class="mini-note">
+              <strong>Key point:</strong> chickpea remains identifiable when the full
+              nutrient profile is viewed as a whole.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ranking">
+        <div class="section-head">
+          <div class="section-kicker">Where chickpea sits among the other samples</div>
+          <h2>Relative position across the main composition measures</h2>
+          <p>
+            These comparisons show where chickpea lands on
+            total carbohydrate, protein, total fat, and fiber relative to the other
+            sampled foods.
+          </p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="metric-card">
+            <div class="metric-top">
+              <strong>Total carbohydrate</strong>
+              <span class="rank-badge">Ranked 2 of 6</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">blackeyed pea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 100%"></div>
+              </div>
+              <div class="metric-value">68.48</div>
+            </div>
+
+            <div class="metric-row chickpea">
+              <div class="metric-label">chickpea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 36.1%"></div>
+              </div>
+              <div class="metric-value">24.72</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">brown lentil (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 36%"></div>
+              </div>
+              <div class="metric-value">24.62</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">pinto bean (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 30.8%"></div>
+              </div>
+              <div class="metric-value">21.10</div>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-top">
+              <strong>Protein</strong>
+              <span class="rank-badge">Ranked 5 of 6</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">blackeyed pea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 100%"></div>
+              </div>
+              <div class="metric-value">18.84</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">edamame pod (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 58.5%"></div>
+              </div>
+              <div class="metric-value">11.03</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">extra firm tofu (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 53.9%"></div>
+              </div>
+              <div class="metric-value">10.16</div>
+            </div>
+
+            <div class="metric-row chickpea">
+              <div class="metric-label">chickpea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 35.3%"></div>
+              </div>
+              <div class="metric-value">6.65</div>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-top">
+              <strong>Total fat</strong>
+              <span class="rank-badge">Ranked 3 of 6</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">edamame pod (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 100%"></div>
+              </div>
+              <div class="metric-value">5.78</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">extra firm tofu (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 94.3%"></div>
+              </div>
+              <div class="metric-value">5.45</div>
+            </div>
+
+            <div class="metric-row chickpea">
+              <div class="metric-label">chickpea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 56.6%"></div>
+              </div>
+              <div class="metric-value">3.27</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">blackeyed pea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 32.4%"></div>
+              </div>
+              <div class="metric-value">1.87</div>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-top">
+              <strong>Fiber</strong>
+              <span class="rank-badge">Ranked 3 of 6</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">blackeyed pea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 100%"></div>
+              </div>
+              <div class="metric-value">6.91</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">pinto bean (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 42.4%"></div>
+              </div>
+              <div class="metric-value">2.93</div>
+            </div>
+
+            <div class="metric-row chickpea">
+              <div class="metric-label">chickpea</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 38.8%"></div>
+              </div>
+              <div class="metric-value">2.68</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">edamame pod (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 35.7%"></div>
+              </div>
+              <div class="metric-value">2.47</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="comparison">
+        <div class="section-head">
+          <div class="section-kicker">Comparison with other legumes</div>
+          <h2>Position of chickpea among the other samples</h2>
+          <p>
+            The figures are interpreted
+            here as targeted comparison plots. They are shown at larger size to make the
+            cross-sample structure easier to read and to highlight where chickpea sits
+            relative to the rest of the legume set.
+          </p>
+        </div>
+
+        <div class="comparison-text">
+          <strong>Comparative interpretation:</strong> these figures are most useful for
+          showing relative position and similarity, not for reducing the dataset to a
+          single ranking.
+        </div>
+
+        <div class="full-stack">
+          <figure class="figure-card featured">
+            <div class="plot-frame tall" data-src="plots/chickpea_macro_spotlight.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_macro_spotlight.png"
+                alt="Chickpea macro spotlight comparison plot"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_macro_spotlight.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 14. Chickpea macro spotlight</strong>
+              <p>
+                This figure compares chickpea with the other legumes across the primary
+                macronutrient axes and clarifies its relative balance of carbohydrate,
+                protein, and fat.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame tall" data-src="plots/chickpea_similarity_constellation.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_similarity_constellation.png"
+                alt="Chickpea similarity constellation comparison plot"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_similarity_constellation.png</strong> in the same
+                folder as this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 15. Chickpea similarity constellation</strong>
+              <p>
+                This constellation-style view maps overall similarity and distance among
+                the foods in the dataset, showing which samples cluster nearer to chickpea
+                and which are more distinct.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame tall" data-src="plots/chickpea_amino_halo.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_amino_halo.png"
+                alt="Chickpea amino halo comparison plot"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_amino_halo.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 16. Chickpea amino halo</strong>
+              <p>
+                This plot isolates the amino-acid dimension and shows how the chickpea
+                protein profile sits relative to the others in the dataset.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="takeaways">
+        <div class="section-head">
+          <div class="section-kicker">Takeaways</div>
+          <h2>Summary of the chickpea profile</h2>
+          <p>
+            Across the full dashboard, chickpea is characterized by a strong carbohydrate
+            base, a meaningful protein fraction, modest fat, and a stable whole-food
+            signature. The profile is structured rather than diffuse, and the comparison
+            plots show that chickpea occupies a distinct position among the other legumes.
+          </p>
+        </div>
+
+        <div class="intro-grid">
+          <div class="takeaway-card">
+            <h3>Macronutrient identity</h3>
+            <p>
+              Chickpea is primarily carbohydrate-led, with protein contributing
+              substantially and fat remaining secondary.
+            </p>
+          </div>
+
+          <div class="takeaway-card">
+            <h3>Internal composition</h3>
+            <p>
+              The nutrient classes are not uniform totals; each shows an internal
+              structure that contributes to the overall signature.
+            </p>
+          </div>
+
+          <div class="takeaway-card">
+            <h3>Comparative position</h3>
+            <p>
+              Relative to the other legumes, chickpea remains compositionally recognizable
+              across both macro and amino-acid comparisons.
+            </p>
+          </div>
+        </div>
+
+        <div class="closing" style="margin-top: 22px">
+          <strong>Core visual set:</strong> the most informative figures for a compact
+          version are <em>macro_donut.png</em>, <em>carbohydrate_profile.png</em>,
+          <em>amino_acid_radar.png</em>, <em>lipid_class_summary.png</em>, and
+          <em>chickpea_macro_spotlight.png</em>.
+        </div>
+      </section>
+    </main>
+
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+      <div class="lightbox-inner">
+        <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+        <img id="lightboxImg" src="" alt="" />
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+      </div>
+    </div>
+
+    <script>
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightboxImg");
+      const lightboxCaption = document.getElementById("lightboxCaption");
+      const lightboxClose = document.getElementById("lightboxClose");
+
+      document.querySelectorAll(".plot-frame").forEach((frame) => {
+        frame.addEventListener("click", () => {
+          const src = frame.dataset.src;
+          const img = frame.querySelector("img");
+          const caption = frame.parentElement.querySelector("figcaption");
+
+          lightboxImg.src = src;
+          lightboxImg.alt = img ? img.alt : "";
+          lightboxCaption.textContent = caption ? caption.innerText.trim() : "";
+          lightbox.classList.add("open");
+          lightbox.setAttribute("aria-hidden", "false");
+        });
+      });
+
+      function closeLightbox() {
+        lightbox.classList.remove("open");
+        lightbox.setAttribute("aria-hidden", "true");
+        lightboxImg.src = "";
+        lightboxImg.alt = "";
+      }
+
+      lightboxClose.addEventListener("click", closeLightbox);
+
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) {
+          closeLightbox();
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeLightbox();
+        }
+      });
+    </script>
+  </body>
+</html>
