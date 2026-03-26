@@ -1,4 +1,4 @@
-##Metabolomics Dashboard
+# Metabolomics Dashboard
 
 The **Metabolomics Dashboard** is a static HTML dashboard designed to present an analytical summary of a sample. It provides a clean and interactive format for visualizing proximate composition, carbohydrate-related compounds, mineral micronutrients, and nutritional context.
 
