@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Data Visualizers</title>
+  <style>
+    :root {
+      --bg: #bbd7c2;
+      --surface: #ffffff;
+      --surface-hover: #f9fbfd;
+      --text: #1f2937;
+      --muted: #62806d;
+      --border: #dbe3ec;
+      --accent: #169155;
+      --accent-soft: #eaf2ff;
+      --shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      --shadow-hover: 0 14px 30px rgba(15, 23, 42, 0.12);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, #ffffff 0%, #f6f8fb 45%, #eef3f8 100%);
+      color: var(--text);
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 34px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      margin: 0 auto;
+      max-width: 700px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 14px;
+      min-height: 235px;
+      padding: 26px;
+      text-decoration: none;
+      color: inherit;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+      border-color: #bfd0e3;
+      background: var(--surface-hover);
+    }
+
+    .icon-wrap {
+      width: 62px;
+      height: 62px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .icon {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.55;
+    }
+
+    .link-text {
+      margin-top: auto;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .descriptions {
+      margin-top: 48px;
+    }
+
+    .descriptions h2 {
+      margin: 0 0 18px;
+      font-size: 1.7rem;
+    }
+
+    .description-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .description-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px;
+    }
+
+    .description-card h3 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+
+    .description-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      white-space: pre-line;
+    }
+
+    .placeholder {
+      display: block;
+      min-height: 260px;
+      padding: 16px 18px;
+      border: 1px dashed #bfd0e3;
+      border-radius: 14px;
+      background: #fcfefe;
+      color: #5f7868;
+    }
+
+    .footer {
+      margin-top: 26px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 24px 16px;
+      }
+
+      .card,
+      .description-card {
+        padding: 22px;
+      }
+
+      .card {
+        min-height: 210px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <div class="eyebrow">Food Data Portal</div>
+      <h1>Food Data Visualizers</h1>
+    </section>
+
+    <section class="grid">
+      <a class="card" href="Dashboard_Viewer/index.html">
+        <div class="icon-wrap" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
+            <rect x="13" y="3" width="8" height="5" rx="1.5"></rect>
+            <rect x="13" y="10" width="8" height="11" rx="1.5"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
+          </svg>
+        </div>
+        <h2>Dashboard Viewer</h2>
+        <p>Open the main dashboard for summary metrics, interactive charts, and overall dataset inspection.</p>
+        <div class="link-text">Open viewer →</div>
+      </a>
+
+      <a class="card" href="Network_Viewer/food_network.html">
+        <div class="icon-wrap" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="6" cy="6" r="2.3"></circle>
+            <circle cx="18" cy="6" r="2.3"></circle>
+            <circle cx="12" cy="18" r="2.3"></circle>
+            <line x1="8" y1="7.2" x2="15.8" y2="7.2"></line>
+            <line x1="7.5" y1="8" x2="10.8" y2="16"></line>
+            <line x1="16.5" y1="8" x2="13.2" y2="16"></line>
+          </svg>
+        </div>
+        <h2>Network Viewer</h2>
+        <p>Explore connected entities and structural relationships within the food data network.</p>
+        <div class="link-text">Open viewer →</div>
+      </a>
+
+      <a class="card" href="UMAP_Viewer/umap_dashboard.html">
+        <div class="icon-wrap" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="7" cy="8" r="1.3"></circle>
+            <circle cx="10.5" cy="10" r="1.3"></circle>
+            <circle cx="8.5" cy="13.5" r="1.3"></circle>
+            <circle cx="15.5" cy="7" r="1.3"></circle>
+            <circle cx="17.5" cy="11" r="1.3"></circle>
+            <circle cx="14" cy="15" r="1.3"></circle>
+            <circle cx="18" cy="16.5" r="1.3"></circle>
+            <path d="M4 20c2.5-3 5.5-4.5 8-4.5 3.2 0 5.7 1.4 8 4.5"></path>
+          </svg>
+        </div>
+        <h2>UMAP Viewer</h2>
+        <p>Inspect low-dimensional projections to identify clusters, similarities, and data separation patterns.</p>
+        <div class="link-text">Open viewer →</div>
+      </a>
+
+      <a class="card" href="geographical_distribution.html">
+        <div class="icon-wrap" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8.5"></circle>
+            <path d="M3.8 9h16.4"></path>
+            <path d="M3.8 15h16.4"></path>
+            <path d="M12 3.5c2.7 2.4 4.2 5.3 4.2 8.5S14.7 18.1 12 20.5"></path>
+            <path d="M12 3.5C9.3 5.9 7.8 8.8 7.8 12S9.3 18.1 12 20.5"></path>
+          </svg>
+        </div>
+        <h2>Geographical Distribution</h2>
+        <p>View regional and location-based patterns across the dataset through a geographic perspective.</p>
+        <div class="link-text">Open viewer →</div>
+      </a>
+    </section>
+
+    <section class="descriptions">
+      <h2>Visualization Descriptions</h2>
+
+      <div class="description-grid">
+        <article class="description-card">
+          <h3>Dashboard Viewer Description</h3>
+          <p class="placeholder">
+            This visualization is designed as a flexible, narrative web-based format for presenting the nutritional and compositional profile of a food item through multiple coordinated charts. In this case, chickpea is used as an example of the kind of food that can be explored in this format. The layout moves from broad composition to more detailed nutrient classes, then to whole-food signature and comparison views, allowing the audience to understand both the internal structure of a food and its position relative to similar foods. Features such as section navigation, summary cards, enlarged figure views, and short interpretive text make the visualization readable, interactive, and suitable for both detailed study and quick exploration. In the chickpea example, the format highlights overall composition, amino-acid pattern, carbohydrate structure, lipid classes, mineral profile, and comparison with other legumes.
+            The target audience includes food science students, nutrition researchers, educators, and general audiences interested in food composition. Because the format is modular and easy to navigate, it can be reused for other foods beyond chickpea, such as lentils, beans, grains, or other nutrient-dense ingredients. This makes it useful not only for academic analysis but also for teaching, science communication, and comparative food studies.
+            The intended impact is to make complex nutritional data easier to interpret and more engaging to explore. Rather than presenting food composition as a long list of values, this format helps users see patterns, relationships, and distinctive signatures visually. Using chickpea as an example demonstrates how a single food can be communicated as a complete profile, while also showing that the same visualization structure could be applied to many other foods in a consistent and informative way.
+            
+          </p>
+        </article>
+
+        <article class="description-card">
+          <h3>Network Viewer Description</h3>
+          <p class="placeholder">
+            This visualization is designed as an interactive network viewer for exploring relationships between food samples and their defining compositional features. Each food is represented as a sample node, while connected nodes represent categories such as primary group, secondary group, processing type, and selected nutrient or compound families including lipids, carbohydrates, minerals, amino acids, and macronutrients. The design emphasizes user control: viewers can paste tab-separated data, choose which feature families to include, set thresholds for minimum values and top features, search for nodes by name, and inspect details through direct interaction. The network layout, zoom and pan functions, hover and click behavior, legend, and node detail panel make the structure readable while still allowing the user to explore a complex multivariable dataset. Because the graph is rendered locally without external libraries, it is also lightweight and easy to distribute or use offline.
+            The target audience includes food science students, nutrition researchers, data visualization learners, and educators who want to study how foods relate to one another through shared compositional traits. It is especially useful for audiences who may find large nutrient tables difficult to interpret, since the network format turns tabular data into visible patterns of connection. The interface also supports exploratory learning, making it appropriate for classroom demonstrations, research prototypes, and independent investigation of food datasets.
+            The intended impact is to make food composition data more intuitive, interactive, and relational. Instead of viewing each food as an isolated row in a spreadsheet, users can see how foods connect through categories and dominant chemical or nutritional features. This supports pattern recognition, comparison, and discovery of shared or distinctive characteristics across samples. In an educational or research context, the visualization encourages users to think of food data as a network of relationships, helping them better understand classification, processing effects, and compositional similarity in a more engaging and interpretable form.
+            
+            
+          </p>
+        </article>
+
+        <article class="description-card">
+          <h3>UMAP Viewer Description</h3>
+          <p class="placeholder">
+            This visualization is designed as an interactive UMAP dashboard that helps users explore relationships among food compounds in a clear, visually organized way. The main scatter plot maps compounds by their UMAP coordinates so that chemically or nutritionally similar items appear close together, making clustering patterns easy to spot. The design supports interpretation through multiple visual encodings: points can be colored by variables such as subcategory or food, shaped by another category, and resized by concentration. A left-hand control panel lets users upload or paste TSV data, filter by food, subcategory, status, text search, and concentration range, while summary statistics and a preview table provide context and help connect the abstract plot to the underlying records. Hover labels reveal detailed metadata, including compound name and structure, allowing close inspection without overcrowding the screen. Overall, the layout balances overview and detail, giving users both a high-level map of the dataset and tools for targeted analysis.
+            The primary audience is food science students, nutrition researchers, data visualization learners, and instructors who want to examine large biochemical datasets without needing advanced programming skills. Because the interface is interactive and relatively intuitive, it can also support communication with interdisciplinary audiences, such as public health researchers or policy professionals interested in nutrient and compound distributions across foods.
+            The intended impact is to make complex food composition data more accessible, interpretable, and engaging. Instead of reading long tables of compounds and concentrations, users can quickly identify clusters, outliers, and similarities among foods and compound classes. This encourages exploratory analysis, supports hypothesis generation, and helps users better understand how nutritional and biochemical profiles relate across foods. In an educational setting, the dashboard can strengthen data literacy by showing how dimensionality reduction and interactive filtering turn dense scientific data into interpretable visual evidence.
+          </p>
+        </article>
+
+        <article class="description-card">
+          <h3>Geographical Distribution Description</h3>
+          <p class="placeholder">
+[Insert approximately 500 words here describing the Geographical Distribution visualization.
+Explain the spatial patterns, regional trends, mapping logic, and how
+geographic context contributes to the interpretation of the food data.]
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
