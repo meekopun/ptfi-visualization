@@ -79,10 +79,10 @@ body.light{
 #header p{font-size:.73rem;color:var(--text-muted);margin-top:3px;line-height:1.45;max-width:52rem}
 
 #controls{
-  position:absolute;top:60px;left:12px;z-index:1000;
+  position:absolute;top:80px;left:12px;z-index:1000;
   background:var(--panel);border:1px solid var(--border);border-radius:10px;
   padding:14px 16px;width:230px;backdrop-filter:blur(10px);color:var(--text);
-  max-height:calc(100vh - 80px);overflow-y:auto
+  max-height:calc(100vh - 100px);overflow-y:auto
 }
 .ctrl-section{margin-bottom:14px}
 .ctrl-section:last-child{margin-bottom:0}
@@ -123,9 +123,9 @@ body.light{
 #theme-btn:hover{background:var(--hover-bg)}
 
 #detail-panel{
-  position:absolute;top:60px;right:12px;z-index:1000;
+  position:absolute;top:80px;right:12px;z-index:1000;
   background:var(--panel);border:1px solid var(--border);border-radius:10px;
-  padding:0;width:320px;max-height:calc(100vh - 80px);overflow-y:auto;
+  padding:0;width:320px;max-height:calc(100vh - 100px);overflow-y:auto;
   backdrop-filter:blur(10px);display:none;color:var(--text);
   box-shadow:0 8px 40px var(--shadow)
 }
@@ -231,6 +231,15 @@ body.light{
       <input type="checkbox" id="show-routes"/>
       Trade routes
     </label>
+  </div>
+  <div class="ctrl-section">
+    <div class="ctrl-label">Heatmap Food</div>
+    <select id="food-select" style="width:100%;padding:6px 8px;font-size:.76rem;
+      font-family:inherit;border-radius:6px;border:1px solid var(--border);
+      background:var(--panel-solid);color:var(--text);cursor:pointer;
+      outline:none;transition:border-color .2s">
+      <option value="">All foods (combined)</option>
+    </select>
   </div>
   <div class="ctrl-section">
     <div class="ctrl-label">Food Groups</div>
@@ -672,6 +681,7 @@ let showHeatmap = true;
 let showMarkers = false;
 let selectedFood = null;
 let selectedCountryLayer = null;
+let selectedItem = "";
 let isDark = false;
 const markers = [];
 const routeLines = [];
@@ -700,6 +710,22 @@ Object.entries(GROUP_COLORS).forEach(([group, color]) => {
     render();
   });
   filterList.appendChild(el);
+});
+
+/* ── Populate food dropdown ── */
+const foodSelect = document.getElementById("food-select");
+Object.keys(PRODUCTION_DATA).sort((a,b)=>{
+  return ITEM_DISPLAY[a].localeCompare(ITEM_DISPLAY[b]);
+}).forEach(item => {
+  const opt = document.createElement("option");
+  opt.value = item;
+  opt.textContent = ITEM_DISPLAY[item];
+  opt.style.color = GROUP_COLORS[ITEM_TO_GROUP[item]];
+  foodSelect.appendChild(opt);
+});
+foodSelect.addEventListener("change", e => {
+  selectedItem = e.target.value;
+  render();
 });
 
 /* ── Toggle buttons ── */
@@ -963,10 +989,15 @@ let countryLayer=null, countryGeoData=null;
 
 function getProductionForCountry(geoName){
   const result = {};
-  Object.entries(PRODUCTION_DATA).forEach(([item, countries]) => {
-    if(!activeGroups.has(ITEM_TO_GROUP[item])) return;
-    if(countries[geoName]) result[item] = countries[geoName];
-  });
+  if(selectedItem){
+    const countries = PRODUCTION_DATA[selectedItem];
+    if(countries && countries[geoName]) result[selectedItem] = countries[geoName];
+  } else {
+    Object.entries(PRODUCTION_DATA).forEach(([item, countries]) => {
+      if(!activeGroups.has(ITEM_TO_GROUP[item])) return;
+      if(countries[geoName]) result[item] = countries[geoName];
+    });
+  }
   return result;
 }
 
@@ -987,14 +1018,27 @@ function formatTonnes(t){
   return Math.round(t)+' tonnes';
 }
 
+function getItemMax(){
+  if(!selectedItem) return PROD_GLOBAL_MAX;
+  const countries = PRODUCTION_DATA[selectedItem];
+  if(!countries) return 1;
+  return Math.max(...Object.values(countries));
+}
+
 function countryStyle(feature){
   const prod = getProductionForCountry(feature.properties.name);
   const total = Object.values(prod).reduce((s,v)=>s+v,0);
   if(total===0) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
-  const color = blendProductionColors(prod);
+  let color;
+  if(selectedItem){
+    color = GROUP_COLORS[ITEM_TO_GROUP[selectedItem]];
+  } else {
+    color = blendProductionColors(prod);
+  }
   if(!color) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
-  const t = Math.log10(1+total)/Math.log10(1+PROD_GLOBAL_MAX);
-  const op = 0.25 + 0.55*t;
+  const maxVal = getItemMax();
+  const t = Math.log10(1+total)/Math.log10(1+maxVal);
+  const op = 0.2 + 0.6*t;
   return {fillColor:color, fillOpacity:op, color:color, weight:1, opacity:Math.min(0.9,op+0.15)};
 }
 
@@ -1014,8 +1058,9 @@ function updateHeatmap(){
       const total = Object.values(prod).reduce((s,v)=>s+v,0);
       if(!total) return;
 
+      const tipLabel = selectedItem ? ITEM_DISPLAY[selectedItem] : 'Total';
       layer.bindTooltip(
-        `<b>${ft.properties.name}</b><br>${formatTonnes(total)}`,
+        `<b>${ft.properties.name}</b><br>${tipLabel}: ${formatTonnes(total)}`,
         {sticky:true, className:"custom-tooltip", direction:"top"}
       );
 
