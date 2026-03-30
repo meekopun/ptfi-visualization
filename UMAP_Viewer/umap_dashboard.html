@@ -149,6 +149,55 @@
       border: none;
     }
 
+    /* Navigation */
+    .nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      margin: -20px -20px 20px -20px;
+      padding: 14px 20px;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-links a {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+
+    .nav-links a.active {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
     button:hover {
       filter: brightness(1.03);
     }
@@ -395,6 +444,17 @@
 </head>
 <body>
   <div class="wrap">
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/" class="nav-brand">PTFI Visualization</a>
+        <div class="nav-links">
+          <a href="/" title="Home">Home</a>
+          <a href="/Dashboard_Viewer/" title="Dashboard">Dashboard</a>
+          <a href="/Network_Viewer/food_network.html" title="Network Viewer">Network</a>
+          <a href="/UMAP_Viewer/umap_dashboard.html" class="active" title="UMAP">UMAP</a>
+        </div>
+      </div>
+    </nav>
     <div class="titlebar">
       <div>
         <h1>UMAP Dashboard from TSV</h1>

@@ -41,11 +41,29 @@
     .legend { position:absolute; top:12px; right:12px; background:rgba(255,255,255,.92); border:1px solid var(--border); border-radius:12px; padding:8px 10px; font-size:12px; backdrop-filter:blur(4px); max-width:220px; }
     .legend-row { display:flex; align-items:center; gap:8px; margin:4px 0; }
     .swatch { width:10px; height:10px; border-radius:50%; }
+    .nav { background:var(--panel); border-bottom:1px solid var(--border); margin:-18px -18px 18px -18px; padding:12px 18px; }
+    .nav-container { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .nav-brand { font-weight:700; font-size:1.05rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:6px; }
+    .nav-links a { padding:7px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; color:var(--muted); transition:all 0.2s; border:1px solid transparent; text-decoration:none; }
+    .nav-links a:hover { background:#f7f9fc; color:var(--text); }
+    .nav-links a.active { background:#1f2430; color:#fff; }
     @media (max-width:1200px){ .layout{grid-template-columns:1fr;} .controls{position:static;} .topbar{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/" class="nav-brand">PTFI Visualization</a>
+        <div class="nav-links">
+          <a href="/" title="Home">Home</a>
+          <a href="/Dashboard_Viewer/" title="Dashboard">Dashboard</a>
+          <a href="/Network_Viewer/food_network.html" class="active" title="Network Viewer">Network</a>
+          <a href="/UMAP_Viewer/umap_dashboard.html" title="UMAP">UMAP</a>
+        </div>
+      </div>
+    </nav>
     <h1>Food Network Viewer</h1>
     <p class="sub">Paste your tab-separated food table, pick which feature families to include, and render an offline network. This file uses no external libraries, so it opens locally in a browser.</p>
     <div class="layout">
