@@ -135,6 +135,14 @@
         border-radius: 22px;
         padding: 18px 18px;
       }
+      .hero-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 150px;
+      }
 
       .hero-note {
         margin-top: 18px;
@@ -160,6 +168,51 @@
 
       .hero-panel li + li {
         margin-top: 6px;
+      }
+
+      .protein-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 75px;
+      }
+      
+      .carb-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 100px;
+      }
+
+      .fat-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 128px;
+      }
+
+      .integrated-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 80px;
+      }
+      
+      .structure-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 100px;
       }
 
       .nav {
@@ -364,6 +417,7 @@
         border-radius: 26px;
         overflow: hidden;
         box-shadow: var(--shadow);
+        background-image: #fff8e8;
       }
 
       .figure-card.featured {
@@ -699,6 +753,20 @@
                 <li>Comparison plots show where chickpea sits relative to the other legumes.</li>
                 <li>Any figure can be opened in a larger view.</li>
               </ul>
+              <div class="hero-picture" data-src="plots/chickpea.jpg">
+                <img
+                  src="plots/chickpea.jpg"
+                  alt="Chickpea picture"
+                  loading="lazy"
+                  style = "object-fit: cover;"
+                  onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+                />
+                <div class="missing">
+                  Image not found.<br />
+                  Place <strong>chickpea.jpg</strong> in the same folder as
+                  this HTML file.
+                </div>
+              </div>
             </aside>
           </div>
         </div>
@@ -775,7 +843,7 @@
         </div>
 
         <div class="feature">
-          <figure class="figure-card featured">
+          <figure class="figure-card featured"  style="width: 650px;">
             <div class="plot-frame wide" data-src="plots/proximate_composition.png">
               <span class="zoom-chip">Click to enlarge</span>
               <img
@@ -800,7 +868,7 @@
             </figcaption>
           </figure>
 
-          <div class="feature-text">
+          <div class="feature-text" style="width:650px; height: 475px;">
             <h3>Structural interpretation</h3>
             <p>
               The proximate composition view defines the main proportions of the chickpea
@@ -815,6 +883,20 @@
             <div class="mini-note">
               <strong>Key point:</strong> chickpea is defined more by structural
               macronutrients than by sugars or fat.
+            </div>
+            <div class="structure-picture" data-src="plots/roasted-chickpea2.jpg">
+              <img
+                src="plots/roasted-chickpea2.jpg"
+                alt="Chickpea picture"
+                loading="lazy"
+                style = "object-fit: cover; object-position: 50% -100px;"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>roasted-chickpea2.jpg</strong> in the same folder as
+                this HTML file.
+              </div>
             </div>
           </div>
         </div>
@@ -885,7 +967,7 @@
         </div>
 
         <div class="feature reverse">
-          <div class="feature-text">
+          <div class="feature-text" style="width:650px;">
             <h3>Protein profile interpretation</h3>
             <p>
               The amino-acid plots show that chickpea protein is not compositionally flat.
@@ -902,9 +984,23 @@
               <strong>Key point:</strong> chickpea contains a broad, structured amino-acid
               profile rather than a uniform one.
             </div>
+            <div class="protein-picture" data-src="plots/roasted-chickpea.jpg">
+                <img
+                  src="plots/roasted-chickpea.jpg"
+                  alt="Roasted chickpea"
+                  loading="lazy"
+                  style = "object-fit: cover;"
+                  onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+                />
+                <div class="missing">
+                  Image not found.<br />
+                  Place <strong>roasted-chickpea.jpg</strong> in the same folder as
+                  this HTML file.
+                </div>
+              </div>
           </div>
 
-          <figure class="figure-card featured">
+          <figure class="figure-card featured" style="width:650px; height: 485px; ">
             <div class="plot-frame wide" data-src="plots/amino_acid_profile.png">
               <span class="zoom-chip">Click to enlarge</span>
               <img
@@ -1037,11 +1133,27 @@
               <strong>Key point:</strong> the carbohydrate story is primarily a
               starch-and-fiber story.
             </div>
+
+            <div class="carb-picture" data-src="plots/chickpea_seed.jpg">
+              <img
+                src="plots/chickpea_seed.jpg"
+                alt="Chickpea picture"
+                loading="lazy"
+                style = "object-fit: cover; object-position: 50% -100px;"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_seed.jpg</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+
           </div>
         </div>
 
         <div class="two-up">
-          <figure class="figure-card">
+          <figure class="figure-card" style = "width: 770px">
             <div class="plot-frame standard" data-src="plots/carb_circular_lollipop.png">
               <span class="zoom-chip">Click to enlarge</span>
               <img
@@ -1096,6 +1208,20 @@
               <strong>Key point:</strong> the fat fraction is small, but its class
               distribution remains informative.
             </div>
+            <div class="fat-picture" data-src="plots/roasted-chickpea2.jpg">
+              <img
+                src="plots/roasted-chickpea2.jpg"
+                alt="Chickpea picture"
+                loading="lazy"
+                style = "object-fit: cover; object-position: 50% -100px;"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>roasted-chickpea2.jpg</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
           </div>
 
           <figure class="figure-card featured">
@@ -1125,7 +1251,7 @@
         </div>
 
         <div class="two-up">
-          <figure class="figure-card">
+          <figure class="figure-card" style = "width: 525px;">
             <div class="plot-frame standard" data-src="plots/fat_rose_chart.png">
               <span class="zoom-chip">Click to enlarge</span>
               <img
@@ -1252,7 +1378,7 @@
             </figcaption>
           </figure>
 
-          <div class="feature-text">
+          <div class="feature-text" style="height: 515px;">
             <h3>Integrated interpretation</h3>
             <p>
               Summary figures are useful because they synthesize the information from the
@@ -1269,6 +1395,20 @@
               <strong>Key point:</strong> chickpea remains identifiable when the full
               nutrient profile is viewed as a whole.
             </div>
+            <div class="integrated-picture" data-src="plots/chickpea.jpg">
+                <img
+                  src="plots/chickpea.jpg"
+                  alt="Chickpea picture"
+                  loading="lazy"
+                  style = "object-fit: cover;"
+                  onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+                />
+                <div class="missing">
+                  Image not found.<br />
+                  Place <strong>chickpea.jpg</strong> in the same folder as
+                  this HTML file.
+                </div>
+              </div>
           </div>
         </div>
       </section>
@@ -1322,6 +1462,22 @@
               </div>
               <div class="metric-value">21.10</div>
             </div>
+
+            <div class="metric-row">
+              <div class="metric-label">edamame pod (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 15.4%"></div>
+              </div>
+              <div class="metric-value">10.53</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">extra firm tofu (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 3%"></div>
+              </div>
+              <div class="metric-value">1.71</div>
+            </div>
           </article>
 
           <article class="metric-card">
@@ -1354,12 +1510,28 @@
               <div class="metric-value">10.16</div>
             </div>
 
+            <div class="metric-row">
+              <div class="metric-label">brown lentil (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 45.6%"></div>
+              </div>
+              <div class="metric-value">8.59</div>
+            </div>
+
             <div class="metric-row chickpea">
               <div class="metric-label">chickpea</div>
               <div class="metric-track">
                 <div class="metric-fill" style="width: 35.3%"></div>
               </div>
               <div class="metric-value">6.65</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">pinto bean (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 31.6%"></div>
+              </div>
+              <div class="metric-value">5.97</div>
             </div>
           </article>
 
@@ -1400,6 +1572,22 @@
               </div>
               <div class="metric-value">1.87</div>
             </div>
+
+            <div class="metric-row">
+              <div class="metric-label">pinto bean (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 11.7%"></div>
+              </div>
+              <div class="metric-value">0.68</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">brown lentil (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 11.5%"></div>
+              </div>
+              <div class="metric-value">0.66</div>
+            </div>
           </article>
 
           <article class="metric-card">
@@ -1438,6 +1626,22 @@
                 <div class="metric-fill" style="width: 35.7%"></div>
               </div>
               <div class="metric-value">2.47</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">brown lentil (cooked)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 32.6%"></div>
+              </div>
+              <div class="metric-value">2.25</div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">extra firm tofu (raw)</div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: 8.6%"></div>
+              </div>
+              <div class="metric-value">0.60</div>
             </div>
           </article>
         </div>
@@ -1532,6 +1736,140 @@
               <p>
                 This plot isolates the amino-acid dimension and shows how the chickpea
                 protein profile sits relative to the others in the dataset.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+        <div class="comparison-text">
+          <strong>Category radar comparisons:</strong> these radar plots extend the
+          comparison view beyond legumes and show how chickpea aligns with broader food
+          categories across matched nutritional dimensions.
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_animal_products_radar.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_animal_products_radar.png"
+                alt="Radar plot comparing chickpea with animal products"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_animal_products_radar.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 17. Chickpea vs animal products radar</strong>
+              <p>
+                This radar plot compares chickpea with animal-product profiles and shows
+                where the chickpea nutrient pattern overlaps with, or departs from, that
+                category-level signature.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_composite_dish_radar.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_composite_dish_radar.png"
+                alt="Radar plot comparing chickpea with composite dishes"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_composite_dish_radar.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 18. Chickpea vs composite dishes radar</strong>
+              <p>
+                This figure places chickpea beside composite dishes, making it easier to
+                see how a single whole-food legume compares with more mixed culinary
+                profiles.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_fruits_radar.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_fruits_radar.png"
+                alt="Radar plot comparing chickpea with fruits"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_fruits_radar.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 19. Chickpea vs fruits radar</strong>
+              <p>
+                This comparison highlights the contrast between chickpea and fruit-like
+                nutrient geometry, especially the difference between a structured legume
+                profile and a lighter plant-food profile.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_grains_radar.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_grains_radar.png"
+                alt="Radar plot comparing chickpea with grains"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_grains_radar.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 20. Chickpea vs grains radar</strong>
+              <p>
+                This radar view compares chickpea with grains and helps distinguish where
+                the legume pattern converges with staple carbohydrate foods and where it
+                remains distinct because of protein and fiber structure.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="full-stack">
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_vegetables_radar.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_vegetables_radar.png"
+                alt="Radar plot comparing chickpea with vegetables"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_vegetables_radar.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 21. Chickpea vs vegetables radar</strong>
+              <p>
+                This final radar comparison shows how chickpea relates to vegetables and
+                rounds out the category-level view of where the chickpea signature sits
+                across broader food groups.
               </p>
             </figcaption>
           </figure>
