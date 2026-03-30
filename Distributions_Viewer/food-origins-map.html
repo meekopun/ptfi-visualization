@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PTFI — Global Food Origins Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;transition:background .3s}
+
+:root{
+  --bg:        #0b0d10;
+  --panel:     rgba(20,23,30,.94);
+  --panel-solid:#14171e;
+  --header-from:rgba(15,17,20,.96);
+  --header-to: rgba(15,17,20,.82);
+  --border:    #2a2f38;
+  --text:      #e0e2e6;
+  --text-head: #e8eaed;
+  --text-muted:#9aa0a6;
+  --text-dim:  #6b7280;
+  --text-mid:  #b8bcc4;
+  --hover-bg:  rgba(255,255,255,.06);
+  --close-bg:  rgba(255,255,255,.08);
+  --close-hover:rgba(255,255,255,.15);
+  --row-border:rgba(255,255,255,.04);
+  --bar-bg:    #1a1d23;
+  --marker-border:rgba(255,255,255,.6);
+  --shadow:    rgba(0,0,0,.5);
+  --tooltip-bg:rgba(18,21,28,.96);
+  --tooltip-border:#3a3f4a;
+  --tt-name:   #f0f1f3;
+  --tt-mid:    #b8bcc4;
+  --zoom-bg:   rgba(20,23,30,.9);
+  --zoom-text: #e0e2e6;
+  --attr-bg:   rgba(15,17,20,.7);
+  --attr-text: #6b7280;
+  --attr-link: #9aa0a6;
+}
+body.light{
+  --bg:        #f4f5f7;
+  --panel:     rgba(255,255,255,.92);
+  --panel-solid:#ffffff;
+  --header-from:rgba(255,255,255,.97);
+  --header-to: rgba(255,255,255,.88);
+  --border:    #d1d5db;
+  --text:      #1f2937;
+  --text-head: #111827;
+  --text-muted:#6b7280;
+  --text-dim:  #9ca3af;
+  --text-mid:  #4b5563;
+  --hover-bg:  rgba(0,0,0,.04);
+  --close-bg:  rgba(0,0,0,.06);
+  --close-hover:rgba(0,0,0,.12);
+  --row-border:rgba(0,0,0,.06);
+  --bar-bg:    #e5e7eb;
+  --marker-border:rgba(255,255,255,.85);
+  --shadow:    rgba(0,0,0,.12);
+  --tooltip-bg:rgba(255,255,255,.97);
+  --tooltip-border:#d1d5db;
+  --tt-name:   #111827;
+  --tt-mid:    #4b5563;
+  --zoom-bg:   rgba(255,255,255,.92);
+  --zoom-text: #1f2937;
+  --attr-bg:   rgba(255,255,255,.8);
+  --attr-text: #9ca3af;
+  --attr-link: #6b7280;
+}
+
+#map{width:100%;height:100%;background:var(--bg)}
+
+#header{
+  position:absolute;top:0;left:0;right:0;z-index:1000;
+  background:linear-gradient(180deg,var(--header-from),var(--header-to));
+  padding:10px 16px;border-bottom:1px solid var(--border);pointer-events:none
+}
+#header h1{font-size:1.05rem;font-weight:600;color:var(--text-head);letter-spacing:.02em}
+#header p{font-size:.73rem;color:var(--text-muted);margin-top:3px;line-height:1.45;max-width:52rem}
+
+#controls{
+  position:absolute;top:80px;left:12px;z-index:1000;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;width:230px;backdrop-filter:blur(10px);color:var(--text);
+  max-height:calc(100vh - 100px);overflow-y:auto
+}
+.ctrl-section{margin-bottom:14px}
+.ctrl-section:last-child{margin-bottom:0}
+.ctrl-label{
+  font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-muted);margin-bottom:8px;font-weight:600
+}
+
+.toggle-group{display:flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+.toggle-btn{
+  flex:1;padding:7px 4px;font-size:.74rem;text-align:center;cursor:pointer;
+  background:transparent;color:var(--text-muted);border:none;font-family:inherit;
+  transition:all .2s
+}
+.toggle-btn.active{background:#2563eb;color:#fff}
+.toggle-btn:hover:not(.active){background:var(--hover-bg)}
+
+.filter-item{
+  display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;
+  font-size:.78rem;user-select:none;transition:opacity .2s
+}
+.filter-item.off{opacity:.3;text-decoration:line-through}
+.filter-swatch{width:13px;height:13px;border-radius:3px;flex-shrink:0}
+.filter-count{color:var(--text-dim);font-size:.66rem;margin-left:auto;padding-left:6px}
+
+.route-toggle{
+  display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer;
+  user-select:none;padding:2px 0;color:var(--text-mid)
+}
+.route-toggle input{accent-color:#2563eb}
+
+#theme-btn{
+  width:100%;padding:7px 4px;font-size:.74rem;text-align:center;cursor:pointer;
+  background:transparent;color:var(--text-muted);border:1px solid var(--border);
+  border-radius:6px;font-family:inherit;transition:all .2s;display:flex;
+  align-items:center;justify-content:center;gap:6px
+}
+#theme-btn:hover{background:var(--hover-bg)}
+
+#detail-panel{
+  position:absolute;top:80px;right:12px;z-index:1000;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:0;width:320px;max-height:calc(100vh - 100px);overflow-y:auto;
+  backdrop-filter:blur(10px);display:none;color:var(--text);
+  box-shadow:0 8px 40px var(--shadow)
+}
+.dp-header{
+  padding:14px 16px 10px;border-bottom:1px solid var(--border);
+  position:relative
+}
+.dp-close{
+  position:absolute;top:10px;right:12px;width:24px;height:24px;
+  border:none;background:var(--close-bg);color:var(--text-muted);
+  border-radius:50%;cursor:pointer;font-size:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s
+}
+.dp-close:hover{background:var(--close-hover);color:var(--text)}
+.dp-name{font-size:.95rem;font-weight:600;padding-right:30px;line-height:1.3}
+.dp-sci{font-size:.72rem;color:var(--text-muted);font-style:italic;margin-top:2px}
+.dp-badge{
+  display:inline-block;font-size:.65rem;padding:2px 8px;border-radius:10px;
+  margin-top:6px;font-weight:500
+}
+.dp-body{padding:14px 16px}
+.dp-section{margin-bottom:14px}
+.dp-section:last-child{margin-bottom:0}
+.dp-section-title{
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text-muted);margin-bottom:6px;font-weight:600
+}
+.dp-row{
+  display:flex;justify-content:space-between;font-size:.76rem;
+  padding:3px 0;border-bottom:1px solid var(--row-border)
+}
+.dp-row:last-child{border-bottom:none}
+.dp-row-label{color:var(--text-mid)}
+.dp-row-value{color:var(--text);font-weight:500}
+
+.macro-bar-container{margin-top:6px}
+.macro-bar{
+  display:flex;height:22px;border-radius:5px;overflow:hidden;
+  background:var(--bar-bg);margin-bottom:8px
+}
+.macro-bar-seg{height:100%;transition:width .4s ease}
+.macro-legend{display:flex;flex-wrap:wrap;gap:4px 12px}
+.macro-legend-item{display:flex;align-items:center;gap:4px;font-size:.7rem}
+.macro-legend-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.macro-legend-val{color:var(--text-muted)}
+
+.leaflet-control-attribution{
+  background:var(--attr-bg)!important;color:var(--attr-text)!important;
+  font-size:.6rem!important
+}
+.leaflet-control-attribution a{color:var(--attr-link)!important}
+.leaflet-control-zoom a{
+  background:var(--zoom-bg)!important;color:var(--zoom-text)!important;
+  border-color:var(--border)!important
+}
+.leaflet-control-zoom a:hover{background:rgba(37,99,235,.6)!important}
+
+.marker-pulse{
+  animation:pulse 2s ease-out infinite
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(37,99,235,.5)}
+  70%{box-shadow:0 0 0 12px rgba(37,99,235,0)}
+  100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+}
+
+#map-stats{
+  position:absolute;bottom:26px;left:12px;z-index:1000;
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  padding:8px 14px;font-size:.72rem;color:var(--text-muted);
+  backdrop-filter:blur(8px);pointer-events:none
+}
+</style>
+</head>
+<body class="light">
+<div id="map"></div>
+
+<div id="header">
+  <h1>Global Distribution of Foods</h1>
+  <p>11 foods from the Periodic Table of Food Initiative. The heatmap shows FAO production volume (tonnes) for 12 key foods. Toggle food markers for native origin and collection locations, filter by food group, and click countries or markers for details.</p>
+</div>
+
+<div id="controls">
+  <div class="ctrl-section">
+    <div class="ctrl-label">Map View</div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-view="native">Native Origin</button>
+      <button class="toggle-btn" data-view="collection">Collection</button>
+    </div>
+  </div>
+  <div class="ctrl-section">
+    <div class="ctrl-label">Display</div>
+    <label class="route-toggle">
+      <input type="checkbox" id="show-heatmap" checked/>
+      Country heatmap
+    </label>
+    <label class="route-toggle">
+      <input type="checkbox" id="show-markers"/>
+      Food markers
+    </label>
+    <label class="route-toggle">
+      <input type="checkbox" id="show-routes"/>
+      Trade routes
+    </label>
+  </div>
+  <div class="ctrl-section">
+    <div class="ctrl-label">Heatmap Food</div>
+    <select id="food-select" style="width:100%;padding:6px 8px;font-size:.76rem;
+      font-family:inherit;border-radius:6px;border:1px solid var(--border);
+      background:var(--panel-solid);color:var(--text);cursor:pointer;
+      outline:none;transition:border-color .2s">
+      <option value="">All foods (combined)</option>
+    </select>
+  </div>
+  <div class="ctrl-section">
+    <div class="ctrl-label">Food Groups</div>
+    <div id="filter-list"></div>
+  </div>
+  <div class="ctrl-section">
+    <button id="theme-btn">
+      <span id="theme-icon">&#9790;</span>
+      <span id="theme-label">Dark mode</span>
+    </button>
+  </div>
+</div>
+
+<div id="detail-panel">
+  <div class="dp-header">
+    <button class="dp-close" onclick="closeDetail()">&times;</button>
+    <div class="dp-name" id="dp-name"></div>
+    <div class="dp-sci" id="dp-sci"></div>
+    <div id="dp-badge-wrap"></div>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<div id="heat-legend" style="position:absolute;bottom:26px;right:12px;z-index:1000;
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  padding:8px 14px;backdrop-filter:blur(8px)">
+  <div style="font-size:.66rem;color:var(--text-muted);margin-bottom:4px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.05em">Production Heatmap</div>
+  <div style="font-size:.63rem;color:var(--text-dim);margin-bottom:4px">
+    Color = food group blend &middot; Opacity = volume</div>
+  <div style="display:flex;flex-wrap:wrap;gap:3px 8px">
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#4CAF50"></span>Legumes</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#FFB300"></span>Grains</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#E91E63"></span>Fruits</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#009688"></span>Vegetables</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#FF5722"></span>Animal Products</span>
+  </div>
+</div>
+<div id="map-stats"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+<script>
+const GROUP_COLORS = {
+  "Legumes":         "#4CAF50",
+  "Grains":          "#FFB300",
+  "Fruits":          "#E91E63",
+  "Vegetables":      "#009688",
+  "Animal Products": "#FF5722",
+  "Composite dish":  "#AB47BC"
+};
+
+const MACRO_COLORS = {
+  Water:        "#42A5F5",
+  Carbohydrate: "#FFB300",
+  Protein:      "#EF5350",
+  Lipid:        "#AB47BC",
+  Ash:          "#78909C"
+};
+
+const PRODUCTION_DATA = {"Artichokes":{"Algeria":64395,"Argentina":55110,"Australia":452,"Bulgaria":280,"Chile":21268,"China":58937,"Costa Rica":39,"Cyprus":2284,"Egypt":211806,"France":50188,"Greece":22513,"Hungary":43,"Iran":15378,"Israel":3728,"Italy":442459,"Kazakhstan":377,"Kenya":49,"Lebanon":1590,"Lithuania":16,"Malta":1266,"Mexico":3101,"Morocco":44882,"Palestine":26,"Peru":79062,"Poland":200,"Portugal":1,"Réunion":279,"Romania":961,"Spain":231125,"Switzerland":3,"Syria":7038,"Tunisia":20249,"Turkey":31693,"United States of America":42295,"Uzbekistan":2501,"Zambia":425,"Zimbabwe":246},"Sweet potatoes":{"Angola":1021466,"Antigua and Barb.":199,"Argentina":213715,"Australia":54327,"Bahamas":1213,"Bahrain":12,"Bangladesh":316984,"Barbados":2232,"Belize":132,"Benin":64009,"Bhutan":202,"Bolivia":7756,"Botswana":1209,"Brazil":606743,"Brunei":239,"Burkina Faso":66181,"Burundi":804064,"Cape Verde":5956,"Cambodia":41492,"Cameroon":311670,"Chad":125156,"Chile":11485,"China":80121288,"Comoros":8766,"Congo":8353,"Cook Islands":634,"Costa Rica":576,"Côte d'Ivoire":50184,"Cuba":364836,"North Korea":416961,"Dem. Rep. Congo":394026,"Dominica":2244,"Dominican Rep.":46260,"Ecuador":3050,"Egypt":329290,"El Salvador":636,"Eq. Guinea":73533,"eSwatini":2522,"Ethiopia":1015434,"Fiji":7217,"French Polynesia":147,"Gabon":3246,"Ghana":118631,"Greece":3729,"Grenada":524,"Guadeloupe":3468,"Guatemala":994,"Guinea":219608,"Guinea-Bissau":39497,"Guyana":8778,"Haiti":221265,"Honduras":9912,"India":1167270,"Indonesia":1924481,"Israel":23888,"Italy":12375,"Jamaica":35754,"Japan":934813,"Kenya":683739,"Kuwait":35,"Laos":116453,"Liberia":21123,"Madagascar":880999,"Malawi":6177824,"Malaysia":35976,"Maldives":42,"Mali":278964,"Martinique":985,"Mauritania":3320,"Mauritius":854,"Mexico":55566,"Micronesia (Federated States of)":3099,"Morocco":12597,"Mozambique":543618,"Myanmar":51526,"New Caledonia":739,"New Zealand":15604,"Niger":101312,"Nigeria":3094862,"Niue":250,"Pakistan":11268,"Palestine":4188,"Panama":295,"Papua New Guinea":597066,"Paraguay":73627,"Peru":243867,"Philippines":557355,"Portugal":23595,"Puerto Rico":1837,"South Korea":319731,"Réunion":444,"Rwanda":982725,"St. Kitts and Nevis":184,"Saint Lucia":586,"St. Vin. and Gren.":2021,"Senegal":48494,"Sierra Leone":143085,"Singapore":1,"Solomon Is.":92007,"Somalia":7328,"South Africa":63125,"Spain":25564,"Sri Lanka":48303,"Sudan":252687,"Suriname":488,"Timor-Leste":12841,"Togo":6419,"Tonga":6232,"Trinidad and Tobago":830,"Uganda":1956209,"Tanzania":2044607,"United States of America":973667,"Uruguay":70393,"Vanuatu":11831,"Venezuela":14846,"Vietnam":1431627,"Yemen":333,"Zambia":123234,"Zimbabwe":145084},"Rice":{"Afghanistan":525868,"Algeria":426,"Angola":16913,"Argentina":1204780,"Australia":721368,"Azerbaijan":9194,"Bangladesh":44374730,"Belize":14380,"Benin":198268,"Bhutan":59157,"Bolivia":417448,"Brazil":11172093,"Brunei":1753,"Bulgaria":39569,"Burkina Faso":235208,"Burundi":81518,"Cambodia":7535535,"Cameroon":157516,"Central African Rep.":26076,"Chad":184931,"Chile":132858,"China":198438485,"Colombia":2274086,"Comoros":492,"Congo":1193,"Costa Rica":197154,"Côte d'Ivoire":1212570,"Cuba":456501,"North Korea":2299311,"Dem. Rep. Congo":768940,"Dominican Rep.":742071,"Ecuador":1326907,"Egypt":5437347,"El Salvador":34350,"eSwatini":660,"Ethiopia":169425,"Fiji":11296,"France":100171,"French Guiana":24067,"Gabon":1354,"Gambia":38476,"Ghana":541900,"Greece":210050,"Guatemala":29610,"Guinea":1762874,"Guinea-Bissau":151186,"Guyana":690524,"Haiti":133994,"Honduras":41540,"Hungary":9813,"India":150991184,"Indonesia":54463569,"Iran":2741573,"Iraq":253260,"Italy":1441103,"Jamaica":59,"Japan":11180579,"Kazakhstan":343884,"Kenya":95597,"Kyrgyzstan":25034,"Laos":2929796,"Liberia":218119,"Madagascar":3593755,"Malawi":100954,"Malaysia":2347726,"Mali":1660125,"Mauritania":176452,"Mauritius":135,"Mexico":282585,"Micronesia (Federated States of)":137,"Morocco":41740,"Mozambique":167045,"Myanmar":25366114,"Nepal":4587953,"Nicaragua":347561,"Niger":87052,"Nigeria":5237772,"North Macedonia":18963,"Pakistan":9201302,"Panama":302936,"Papua New Guinea":791,"Paraguay":461363,"Peru":2567581,"Philippines":15768545,"Portugal":159635,"Puerto Rico":660,"South Korea":6030871,"Réunion":124,"Romania":27549,"Russia":793126,"Rwanda":68781,"Saudi Arabia":475,"Senegal":601998,"Sierra Leone":819487,"Solomon Is.":2681,"Somalia":5205,"South Africa":3073,"S. Sudan":23994,"Spain":749348,"Sri Lanka":3540843,"Sudan":37977,"Suriname":220106,"Syria":149,"Tajikistan":76636,"Thailand":29971836,"Timor-Leste":64994,"Togo":111451,"Trinidad and Tobago":3611,"Turkey":675430,"Turkmenistan":68460,"Uganda":183441,"Ukraine":80766,"Tanzania":2033702,"United States of America":9171780,"Uruguay":1204768,"Uzbekistan":298763,"Venezuela":801750,"Vietnam":37684254,"Zambia":28907,"Zimbabwe":839},"Pumpkins, squash and gourds":{"Albania":11990,"Algeria":226732,"Antigua and Barb.":314,"Argentina":293637,"Australia":108949,"Austria":18010,"Azerbaijan":15545,"Bahamas":2100,"Bahrain":1029,"Bangladesh":389833,"Barbados":444,"Belgium":33299,"Belize":255,"Bhutan":6053,"Bolivia":47279,"Brunei":679,"Bulgaria":22750,"Cape Verde":943,"Cameroon":143422,"Canada":86438,"Central African Rep.":24645,"Chile":131505,"China":5904535,"Colombia":80614,"Côte d'Ivoire":19380,"Croatia":6034,"Cuba":347971,"Cyprus":3478,"Czechia":14835,"North Korea":78901,"Dem. Rep. Congo":31222,"Denmark":1734,"Djibouti":15,"Dominica":1354,"Dominican Rep.":44413,"Ecuador":11982,"Egypt":595803,"El Salvador":7588,"Fiji":1577,"Finland":1852,"France":129186,"French Polynesia":143,"Georgia":3650,"Germany":94619,"Greece":14128,"Grenada":313,"Guadeloupe":258,"Guatemala":97349,"Guyana":29622,"Haiti":516,"Honduras":8009,"Hungary":19332,"India":3996340,"Indonesia":314288,"Iran":150904,"Iraq":73319,"Ireland":843,"Israel":17132,"Italy":506506,"Jamaica":45032,"Japan":215491,"Jordan":61437,"Kazakhstan":119153,"Kuwait":11604,"Kyrgyzstan":2810,"Latvia":3608,"Lebanon":29056,"Libya":31713,"Lithuania":2997,"Luxembourg":1121,"Malawi":438690,"Malaysia":21813,"Mali":53959,"Malta":2332,"Mauritius":17540,"Mexico":568378,"Morocco":184101,"Mozambique":942,"Nauru":0,"Netherlands":19152,"New Zealand":145299,"Niger":105029,"Oman":7165,"Pakistan":276899,"Palestine":46464,"Panama":16257,"Papua New Guinea":147,"Paraguay":7957,"Peru":163041,"Philippines":268824,"Poland":97719,"Portugal":38763,"Puerto Rico":13669,"Qatar":6555,"South Korea":283325,"Moldova":32391,"Réunion":1639,"Romania":171706,"Russia":991506,"Rwanda":211804,"Saint Lucia":385,"St. Vin. and Gren.":480,"Saudi Arabia":90352,"Senegal":20279,"Sierra Leone":1020,"Slovakia":12223,"Slovenia":5484,"South Africa":270900,"S. Sudan":65902,"Spain":472879,"Sri Lanka":181360,"Sudan":32668,"Sweden":7251,"Switzerland":10752,"Syria":111990,"Thailand":171037,"Tonga":18575,"Trinidad and Tobago":3850,"Tunisia":60337,"Turkey":465122,"Ukraine":933303,"United Arab Emirates":23684,"United States of America":827992,"Uruguay":23545,"Venezuela":67622,"Yemen":8510,"Zimbabwe":256910},"Cherries":{"Albania":12331,"Algeria":6322,"Argentina":6888,"Armenia":7277,"Australia":11411,"Austria":17351,"Azerbaijan":7822,"Belarus":3415,"Belgium":6195,"Bolivia":777,"Bosnia and Herz.":10090,"Bulgaria":36495,"Canada":12053,"Chile":132228,"China":25199,"Croatia":2852,"Cyprus":675,"Czechia":5151,"Denmark":1481,"Dominican Rep.":6137,"Estonia":248,"France":46285,"Georgia":7645,"Germany":60649,"Greece":62713,"Guyana":1415,"Hungary":11826,"India":8684,"Iran":200674,"Israel":2669,"Italy":112431,"Japan":17506,"Jordan":921,"Kazakhstan":7826,"Kyrgyzstan":4853,"Latvia":828,"Lebanon":37390,"Lithuania":797,"Luxembourg":65,"Mexico":164,"Montenegro":2051,"Morocco":8893,"Netherlands":2108,"New Zealand":2095,"North Macedonia":4675,"Norway":873,"Pakistan":2184,"Palestine":944,"Peru":174,"Poland":44029,"Portugal":13700,"Moldova":8952,"Romania":68169,"Russia":67506,"Serbia":22027,"Slovakia":2542,"Slovenia":2922,"South Africa":660,"Spain":94728,"Suriname":1127,"Switzerland":11468,"Syria":57690,"Tunisia":3901,"Turkey":419934,"Ukraine":65275,"United Kingdom":2576,"United States of America":263768,"Uzbekistan":81522},"Olives":{"Afghanistan":4732,"Albania":72806,"Algeria":477097,"Argentina":217857,"Australia":52051,"Azerbaijan":1339,"Bosnia and Herz.":332,"Brazil":963,"Chile":65485,"China":2674,"Croatia":28838,"Cyprus":16915,"Egypt":569590,"El Salvador":8384,"France":22536,"Greece":2529185,"Iran":65283,"Iraq":15251,"Israel":57134,"Italy":2885726,"Jordan":134737,"Kuwait":183,"Lebanon":122207,"Libya":172949,"Malta":57,"Mexico":16902,"Montenegro":1488,"Morocco":997083,"North Macedonia":13115,"Pakistan":2577,"Palestine":96200,"Peru":74729,"Portugal":521356,"Saudi Arabia":353955,"Slovenia":1666,"Spain":5861342,"Syria":747522,"Tunisia":911764,"Turkey":1555106,"United States of America":106362,"Uruguay":6079,"Uzbekistan":108},"Oats":{"Albania":24720,"Algeria":70116,"Argentina":472881,"Armenia":3667,"Australia":1344594,"Austria":113093,"Azerbaijan":4692,"Belarus":506786,"Belgium":23991,"Bolivia":11988,"Bosnia and Herz.":37183,"Brazil":518079,"Bulgaria":45460,"Canada":3510977,"Chile":417868,"China":680201,"Croatia":59280,"Cyprus":510,"Czechia":169326,"North Korea":15231,"Denmark":264564,"Ecuador":965,"Estonia":83706,"Ethiopia":52975,"Finland":1113864,"France":497902,"Georgia":3739,"Germany":906227,"Ghana":33,"Greece":89094,"Hungary":119384,"Iraq":365,"Ireland":161083,"Israel":328,"Italy":299196,"Japan":1088,"Kazakhstan":240430,"Kenya":3683,"Kyrgyzstan":2990,"Latvia":137961,"Lebanon":263,"Lesotho":375,"Lithuania":137496,"Luxembourg":6888,"Mexico":92010,"Mongolia":7404,"Montenegro":514,"Morocco":25673,"Netherlands":10286,"New Zealand":32949,"North Macedonia":4569,"Norway":298048,"Peru":13349,"Poland":1391355,"Portugal":56405,"Moldova":3800,"Romania":328405,"Russia":5388234,"Serbia":69591,"Slovakia":37092,"Slovenia":4642,"South Africa":38033,"Spain":873654,"Sweden":824210,"Switzerland":17685,"Syria":157,"Tajikistan":1952,"Tunisia":1471,"Turkey":264958,"Ukraine":696174,"United Kingdom":761120,"United States of America":1439365,"Uruguay":34475,"Uzbekistan":6181,"Zimbabwe":593},"Quinoa":{"Bhutan":42,"Bolivia":40417,"Ecuador":1782,"Peru":54209},"Lentils, dry":{"Algeria":5832,"Argentina":15740,"Armenia":60,"Australia":368479,"Azerbaijan":1207,"Bangladesh":140651,"Bhutan":43,"Bulgaria":2180,"Canada":1435376,"Chile":1866,"China":137994,"Colombia":1337,"Croatia":96,"Cyprus":7,"Czechia":8,"Ecuador":2044,"Egypt":2551,"Eritrea":176,"Ethiopia":93006,"France":14294,"Greece":3621,"Hungary":569,"India":1062186,"Iran":88425,"Iraq":1434,"Israel":32,"Italy":1435,"Jordan":703,"Kazakhstan":68483,"Kenya":2753,"Lebanon":2469,"Madagascar":785,"Malawi":1145,"Martinique":946,"Mexico":7321,"Morocco":24154,"Myanmar":1124,"Nepal":180568,"New Zealand":1968,"North Macedonia":109,"Pakistan":17852,"Palestine":1024,"Peru":3348,"Russia":56653,"Sierra Leone":2609,"Slovakia":745,"Spain":18841,"Syria":109277,"Tajikistan":688,"Tunisia":1131,"Turkey":448612,"Ukraine":3886,"United States of America":213126,"Uzbekistan":969,"Yemen":7858},"Meat of chickens, fresh or chilled":{"Afghanistan":22858,"Albania":10856,"Algeria":294993,"Angola":22176,"Antigua and Barb.":168,"Argentina":1498827,"Armenia":7563,"Australia":919112,"Austria":102505,"Azerbaijan":65626,"Bahamas":6993,"Bahrain":6298,"Bangladesh":151673,"Barbados":13513,"Belarus":270706,"Belgium":430279,"Belize":14558,"Benin":11743,"Bhutan":702,"Bolivia":320920,"Bosnia and Herz.":34529,"Botswana":3640,"Brazil":9633336,"Brunei":18958,"Bulgaria":90773,"Burkina Faso":146102,"Burundi":6531,"Cape Verde":601,"Cambodia":18042,"Cameroon":65002,"Canada":1060917,"Central African Rep.":4859,"Chad":5772,"Chile":509711,"China":11355004,"Colombia":1067967,"Comoros":549,"Congo":6133,"Cook Islands":43,"Costa Rica":105124,"Côte d'Ivoire":46962,"Croatia":41274,"Cuba":35664,"Cyprus":27973,"Czechia":170840,"North Korea":29340,"Dem. Rep. Congo":11099,"Denmark":170035,"Dominica":346,"Dominican Rep.":284427,"Ecuador":338645,"Egypt":971852,"El Salvador":102560,"Eq. Guinea":232,"Eritrea":1875,"Estonia":14846,"eSwatini":2223,"Ethiopia":52740,"Fiji":19190,"Finland":95340,"France":1378900,"French Guiana":471,"French Polynesia":634,"Gabon":3788,"Gambia":1186,"Georgia":15681,"Germany":764375,"Ghana":39094,"Greece":169135,"Grenada":597,"Guadeloupe":954,"Guatemala":222701,"Guinea":8278,"Guinea-Bissau":2066,"Guyana":28174,"Haiti":8018,"Honduras":139384,"Hungary":282563,"Iceland":6465,"India":2385950,"Indonesia":1928530,"Iran":1535700,"Iraq":84061,"Ireland":100483,"Israel":403042,"Italy":871719,"Jamaica":100684,"Japan":1669653,"Jordan":163575,"Kazakhstan":117470,"Kenya":42497,"Kiribati":675,"Kuwait":44230,"Kyrgyzstan":6975,"Laos":21135,"Latvia":21951,"Lebanon":110316,"Lesotho":829,"Liberia":9879,"Libya":112336,"Lithuania":64894,"Luxembourg":288,"Madagascar":38931,"Malawi":55289,"Malaysia":1112031,"Mali":38406,"Malta":4806,"Martinique":931,"Mauritania":4493,"Mauritius":38473,"Mexico":2590125,"Micronesia (Federated States of)":157,"Mongolia":182,"Montenegro":1474,"Morocco":376516,"Mozambique":59278,"Myanmar":671981,"Namibia":9575,"Nauru":4,"Nepal":56164,"Netherlands":789519,"New Caledonia":716,"New Zealand":157809,"Nicaragua":90815,"Niger":14748,"Nigeria":232855,"Niue":20,"North Macedonia":3140,"Norway":67091,"Oman":5678,"Pakistan":871208,"Palestine":56765,"Panama":129180,"Papua New Guinea":5946,"Paraguay":48550,"Peru":1017535,"Philippines":913929,"Poland":1183744,"Portugal":261100,"Puerto Rico":44228,"Qatar":11729,"South Korea":600822,"Moldova":33374,"Réunion":12572,"Romania":356714,"Russia":2633265,"Rwanda":8382,"St. Kitts and Nevis":113,"Saint Lucia":1276,"St. Vin. and Gren.":163,"Samoa":414,"São Tomé and Príncipe":567,"Saudi Arabia":588892,"Senegal":60590,"Serbia":95627,"Seychelles":815,"Sierra Leone":11188,"Singapore":78351,"Slovakia":64872,"Slovenia":53338,"Solomon Is.":269,"Somalia":3588,"South Africa":1291826,"S. Sudan":36202,"Spain":1159147,"Sri Lanka":129005,"Sudan":68435,"Suriname":7797,"Sweden":118912,"Switzerland":69402,"Syria":128245,"Tajikistan":7694,"Thailand":1338882,"Timor-Leste":864,"Togo":17181,"Tonga":298,"Trinidad and Tobago":50303,"Tunisia":111322,"Turkey":1356021,"Turkmenistan":15821,"Tuvalu":51,"Uganda":66489,"Ukraine":768767,"United Arab Emirates":39868,"United Kingdom":1422086,"Tanzania":72063,"United States of America":16481079,"Uruguay":63666,"Uzbekistan":51493,"Vanuatu":661,"Venezuela":677682,"Vietnam":584920,"Yemen":132117,"Zambia":40622,"Zimbabwe":62489},"Cheese from whole cow milk":{"Albania":17803,"Angola":1319,"Argentina":447057,"Armenia":13177,"Australia":347063,"Austria":158014,"Azerbaijan":40048,"Bangladesh":1058,"Belarus":130232,"Belgium":75530,"Bhutan":1478,"Bosnia and Herz.":7759,"Brazil":40177,"Bulgaria":64616,"Canada":419958,"Chile":69081,"China":2634,"Colombia":57553,"Costa Rica":1327,"Croatia":26757,"Cuba":15579,"Cyprus":1462,"Czechia":118165,"Denmark":356390,"Dominican Rep.":4451,"Ecuador":74669,"Egypt":260167,"El Salvador":2485,"Eritrea":536,"Estonia":29602,"Ethiopia":5403,"Finland":92284,"France":1676671,"Georgia":86,"Germany":1516936,"Greece":32432,"Guatemala":12693,"Honduras":2171,"Hungary":74398,"Iceland":8493,"India":6686,"Iran":27165,"Iraq":3947,"Ireland":168277,"Israel":98166,"Italy":1040162,"Japan":45721,"Kazakhstan":19284,"Kenya":333,"Kyrgyzstan":3146,"Latvia":27824,"Lebanon":16317,"Lithuania":74903,"Luxembourg":2990,"Mexico":139222,"Montenegro":8644,"Morocco":3597,"Namibia":260,"Netherlands":764324,"New Zealand":305566,"Nicaragua":37139,"North Macedonia":6155,"Norway":78030,"Oman":1407,"Panama":11672,"Peru":13360,"Poland":651568,"Portugal":58377,"Moldova":1974,"Romania":57293,"Russia":394453,"Saudi Arabia":128894,"Serbia":36509,"Slovakia":43452,"Slovenia":18384,"South Africa":56976,"S. Sudan":30478,"Spain":147130,"Sudan":346,"Sweden":105347,"Switzerland":174084,"Syria":43832,"Tajikistan":164,"Thailand":2611,"Tunisia":4210,"Turkey":186127,"Turkmenistan":658,"Ukraine":146286,"United Kingdom":402397,"Tanzania":10406,"United States of America":4643239,"Uruguay":45031,"Uzbekistan":59687,"Venezuela":176057,"Yemen":4282,"Zambia":2886,"Zimbabwe":2736}};
+
+const ITEM_TO_GROUP = {
+  "Artichokes":"Vegetables","Sweet potatoes":"Vegetables","Rice":"Grains",
+  "Pumpkins, squash and gourds":"Vegetables","Cherries":"Fruits","Olives":"Fruits",
+  "Oats":"Grains","Quinoa":"Grains","Lentils, dry":"Legumes",
+  "Meat of chickens, fresh or chilled":"Animal Products",
+  "Cheese from whole cow milk":"Animal Products"
+};
+
+const ITEM_DISPLAY = {
+  "Artichokes":"Artichoke","Sweet potatoes":"Sweet Potato","Rice":"Rice",
+  "Pumpkins, squash and gourds":"Pumpkin / Squash","Cherries":"Cherry","Olives":"Olive",
+  "Oats":"Oat","Quinoa":"Quinoa","Lentils, dry":"Lentil",
+  "Meat of chickens, fresh or chilled":"Chicken","Cheese from whole cow milk":"Cheese"
+};
+
+const PROD_GLOBAL_MAX = 296726951;
+
+const foods = [
+  {
+    id:"GGB100039", name:"Chickpea", sci:"Cicer arietinum", family:"Fabaceae",
+    group:"Legumes", groupSec:"Legumes", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Middle East (Fertile Crescent)",
+    nat:[37.0,38.0], col:[39.0,-96.0],
+    n:{water:64.60,carb:24.72,protein:6.65,lipid:3.27,ash:0.75}
+  },
+  {
+    id:"GGB100043", name:"Sweet Potato", sci:"Ipomoea batatas", family:"Convolvulaceae",
+    group:"Vegetables", groupSec:"Tuber", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Central America",
+    nat:[15.0,-90.0], col:[39.0,-96.0],
+    n:{water:79.21,carb:19.02,protein:0.83,lipid:0.23,ash:0.71}
+  },
+  {
+    id:"GGB100045", name:"Brown Lentil", sci:"Lens culinaris", family:"Fabaceae",
+    group:"Legumes", groupSec:"Legumes", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Near East (Anatolia)",
+    nat:[38.0,40.0], col:[39.0,-96.0],
+    n:{water:65.24,carb:24.62,protein:8.59,lipid:0.66,ash:0.89}
+  },
+  {
+    id:"GGB100055", name:"Pinto Bean", sci:"Phaseolus vulgaris", family:"Fabaceae",
+    group:"Legumes", groupSec:"Legumes", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Central America (Mexico)",
+    nat:[19.0,-99.0], col:[39.0,-96.0],
+    n:{water:71.30,carb:21.10,protein:5.97,lipid:0.68,ash:0.96}
+  },
+  {
+    id:"GGB100066", name:"Steel Cut Oat", sci:"Avena sativa", family:"Poaceae",
+    group:"Grains", groupSec:"Wholegrain", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"Canada",
+    nativeRegion:"Fertile Crescent",
+    nat:[36.0,42.0], col:[56.0,-106.0],
+    n:{water:7.06,carb:68.96,protein:12.36,lipid:9.95,ash:1.66}
+  },
+  {
+    id:"GGB100069", name:"Edamame", sci:"Glycine max", family:"Fabaceae",
+    group:"Legumes", groupSec:"Legumes", processing:"Whole/Raw",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"East Asia (China)",
+    nat:[35.0,117.0], col:[39.0,-96.0],
+    n:{water:71.35,carb:10.53,protein:11.03,lipid:5.78,ash:1.31}
+  },
+  {
+    id:"GGB100072", name:"Pumpkin", sci:"Cucurbita maxima", family:"Cucurbitaceae",
+    group:"Vegetables", groupSec:"Vegetable", processing:"Processed",
+    collectedFrom:"supermarket", production:"organic",
+    collectionCountry:"United States of America",
+    nativeRegion:"South America (Andes)",
+    nat:[-15.0,-60.0], col:[39.0,-96.0],
+    n:{water:91.14,carb:7.17,protein:0.86,lipid:0.26,ash:0.57}
+  },
+  {
+    id:"GGB100090", name:"Paneer", sci:"Bos taurus", family:"Bovidae",
+    group:"Animal Products", groupSec:"Dairy", processing:"Whole/Raw",
+    collectedFrom:"small grocery", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"South Asia (India)",
+    nat:[28.6,77.2], col:[39.0,-96.0],
+    n:{water:53.13,carb:5.92,protein:24.42,lipid:15.02,ash:1.51}
+  },
+  {
+    id:"GGB100173", name:"Extra Sharp Cheddar", sci:"Bos taurus", family:"Bovidae",
+    group:"Animal Products", groupSec:"Dairy", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Europe (England)",
+    nat:[51.2,-2.7], col:[39.0,-96.0],
+    n:{water:36.05,carb:9.07,protein:23.34,lipid:28.10,ash:3.43}
+  },
+  {
+    id:"GGB100178", name:"Artichoke Heart", sci:"Cynara cardunculus", family:"Asteraceae",
+    group:"Vegetables", groupSec:"Vegetable", processing:"Whole/Raw",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Mediterranean (Italy/Sicily)",
+    nat:[38.0,15.0], col:[39.0,-96.0],
+    n:{water:81.49,carb:12.69,protein:3.89,lipid:0.46,ash:1.48}
+  },
+  {
+    id:"GGB100183", name:"Extra Firm Tofu", sci:"Glycine max", family:"Fabaceae",
+    group:"Legumes", groupSec:"Soy", processing:"Processed",
+    collectedFrom:"supermarket", production:"organic",
+    collectionCountry:"United States of America",
+    nativeRegion:"East Asia (China)",
+    nat:[36.5,119.0], col:[39.0,-96.0],
+    n:{water:81.89,carb:1.71,protein:10.16,lipid:5.45,ash:0.80}
+  },
+  {
+    id:"GGB100197", name:"Black Olive", sci:"Olea europaea", family:"Oleaceae",
+    group:"Fruits", groupSec:"Fruit", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Eastern Mediterranean",
+    nat:[37.0,28.0], col:[39.0,-96.0],
+    n:{water:82.04,carb:6.71,protein:0.90,lipid:8.04,ash:2.31}
+  },
+  {
+    id:"GGB100281", name:"Sardine", sci:"Sardina pilchardus", family:"Clupeidae",
+    group:"Animal Products", groupSec:"Seafood", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"NE Atlantic / Mediterranean",
+    nat:[40.0,-10.0], col:[39.0,-96.0],
+    n:{water:68.25,carb:0.11,protein:15.88,lipid:9.83,ash:2.13}
+  },
+  {
+    id:"GGB100283", name:"Bison", sci:"Bison bison", family:"Bovidae",
+    group:"Animal Products", groupSec:"Red meat", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"North America (Great Plains)",
+    nat:[41.0,-100.0], col:[39.0,-96.0],
+    n:{water:47.18,carb:0.68,protein:33.91,lipid:17.32,ash:1.47}
+  },
+  {
+    id:"GGB100340", name:"Freekeh", sci:"Triticum turgidum subsp. durum", family:"Poaceae",
+    group:"Grains", groupSec:"Wholegrain", processing:"Cooked",
+    collectedFrom:"supermarket", production:"organic",
+    collectionCountry:"Italy",
+    nativeRegion:"Levant (Middle East)",
+    nat:[33.0,36.0], col:[42.5,12.5],
+    n:{water:5.24,carb:80.04,protein:11.28,lipid:2.04,ash:1.41}
+  },
+  {
+    id:"GGB100360", name:"Black Quinoa", sci:"Chenopodium quinoa", family:"Amaranthaceae",
+    group:"Grains", groupSec:"Pseudocereal", processing:"Whole/Raw",
+    collectedFrom:"field", production:"organic",
+    collectionCountry:"United States of America",
+    nativeRegion:"Andes (Peru / Bolivia)",
+    nat:[-16.0,-68.0], col:[39.0,-96.0],
+    n:{water:6.72,carb:71.01,protein:14.46,lipid:5.36,ash:2.45}
+  },
+  {
+    id:"GGB100438", name:"Blackeyed Pea", sci:"Vigna unguiculata", family:"Fabaceae",
+    group:"Legumes", groupSec:"Legumes", processing:"Whole/Raw",
+    collectedFrom:"field", production:"unknown",
+    collectionCountry:"United States of America",
+    nativeRegion:"West Africa",
+    nat:[9.0,7.5], col:[39.0,-96.0],
+    n:{water:7.64,carb:68.47,protein:18.84,lipid:1.87,ash:3.17}
+  },
+  {
+    id:"GGB100572", name:"Chicken Breast", sci:"Gallus gallus", family:"Phasianidae",
+    group:"Animal Products", groupSec:"Poultry", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Southeast Asia",
+    nat:[15.0,100.0], col:[39.0,-96.0],
+    n:{water:60.41,carb:0.33,protein:35.40,lipid:2.10,ash:2.51}
+  },
+  {
+    id:"GGB100576", name:"Whole Grain Bulgur Wheat", sci:"Triticum aestivum", family:"Poaceae",
+    group:"Grains", groupSec:"Wholegrain", processing:"Whole/Raw",
+    collectedFrom:"supermarket", production:"organic",
+    collectionCountry:"Italy",
+    nativeRegion:"Fertile Crescent (Mesopotamia)",
+    nat:[34.0,44.0], col:[43.5,11.0],
+    n:{water:7.73,carb:77.63,protein:11.44,lipid:1.84,ash:1.37}
+  },
+  {
+    id:"GGB101163", name:"Emu Thigh Filet", sci:"Dromaius novaehollandiae", family:"Dromaiidae",
+    group:"Animal Products", groupSec:"Poultry", processing:"Whole/Raw",
+    collectedFrom:"small grocery", production:"farmed",
+    collectionCountry:"United States of America",
+    nativeRegion:"Australia",
+    nat:[-25.0,135.0], col:[39.0,-96.0],
+    n:{water:68.87,carb:0.30,protein:22.35,lipid:4.33,ash:2.38}
+  },
+  {
+    id:"GGB101493", name:"Huckleberry", sci:"Vaccinium membranaceum", family:"Ericaceae",
+    group:"Fruits", groupSec:"Fruits", processing:"Whole/Raw",
+    collectedFrom:"unknown", production:"farmed",
+    collectionCountry:"United States of America",
+    nativeRegion:"North America (Pacific Northwest)",
+    nat:[46.0,-117.0], col:[39.0,-96.0],
+    n:{water:78.25,carb:18.19,protein:1.00,lipid:2.22,ash:0.34}
+  },
+  {
+    id:"GGB101501", name:"Tart Cherry", sci:"Prunus cerasus", family:"Rosaceae",
+    group:"Fruits", groupSec:"Fruits", processing:"Whole/Raw",
+    collectedFrom:"unknown", production:"organic / farmed",
+    collectionCountry:"United States of America",
+    nativeRegion:"Southwest Asia (Caspian region)",
+    nat:[40.0,50.0], col:[39.0,-96.0],
+    n:{water:85.68,carb:12.49,protein:1.25,lipid:0.05,ash:0.53}
+  },
+  {
+    id:"GGB101510", name:"Sea Lettuce", sci:"Ulva", family:"Ulvaceae",
+    group:"Vegetables", groupSec:"Vegetable", processing:"Whole/Raw",
+    collectedFrom:"other", production:"organic / wild",
+    collectionCountry:"United States of America",
+    nativeRegion:"Cosmopolitan (North Atlantic coast)",
+    nat:[54.0,-5.0], col:[39.0,-96.0],
+    n:{water:20.27,carb:45.90,protein:13.79,lipid:0.92,ash:19.11}
+  },
+  {
+    id:"GGB101520", name:"Red Dragon Fruit", sci:"Selenicereus costaricensis", family:"Cactaceae",
+    group:"Fruits", groupSec:"Fruits", processing:"Whole/Raw",
+    collectedFrom:"other", production:"farmed",
+    collectionCountry:"United States of America",
+    nativeRegion:"Central America (Costa Rica)",
+    nat:[10.0,-84.0], col:[39.0,-96.0],
+    n:{water:89.15,carb:9.59,protein:0.77,lipid:0.07,ash:0.41}
+  },
+  {
+    id:"GGB101609", name:"Oat Milk", sci:"Avena", family:"Poaceae",
+    group:"Grains", groupSec:"Cereal-based milk", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Fertile Crescent",
+    nat:[35.5,41.0], col:[39.0,-96.0],
+    n:{water:87.75,carb:5.70,protein:1.06,lipid:4.68,ash:0.81}
+  },
+  {
+    id:"GGB101641", name:"Peach & Blueberry Crisp",
+    sci:"Prunus persica / Vaccinium", family:"Rosaceae / Ericaceae",
+    group:"Composite dish", groupSec:"Added sugar", processing:"Processed",
+    collectedFrom:"other", production:"unknown",
+    collectionCountry:"United States of America",
+    nativeRegion:"China (peach) / N. America (blueberry)",
+    nat:[35.0,110.0], col:[39.0,-96.0],
+    n:{water:59.12,carb:27.20,protein:2.00,lipid:11.11,ash:0.56}
+  },
+  {
+    id:"GGB102192", name:"Kale (Lacinato)", sci:"Brassica oleracea var. palmifolia",
+    family:"Brassicaceae",
+    group:"Vegetables", groupSec:"Vegetable", processing:"Whole/Raw",
+    collectedFrom:"supermarket", production:"organic",
+    collectionCountry:"United States of America",
+    nativeRegion:"Mediterranean / Asia Minor",
+    nat:[39.0,25.0], col:[39.0,-96.0],
+    n:{water:89.68,carb:5.73,protein:2.57,lipid:0.31,ash:1.71}
+  },
+  {
+    id:"GGB102212", name:"White Rice", sci:"Oryza sativa", family:"Poaceae",
+    group:"Grains", groupSec:"Refined grain", processing:"Cooked",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"East Asia (Yangtze River Valley)",
+    nat:[30.0,112.0], col:[39.0,-96.0],
+    n:{water:70.13,carb:25.91,protein:2.72,lipid:1.23,ash:0.02}
+  },
+  {
+    id:"GGB102403", name:"Dark Chocolate", sci:"Theobroma cacao (primary)",
+    family:"Malvaceae",
+    group:"Composite dish", groupSec:"Added sugar", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Central America / Mexico (cacao)",
+    nat:[18.0,-92.0], col:[39.0,-96.0],
+    n:{water:0.19,carb:64.06,protein:5.89,lipid:28.08,ash:1.79}
+  },
+  {
+    id:"GGB102408", name:"Hazelnut Spread with Cocoa",
+    sci:"Corylus avellana / Theobroma cacao", family:"Betulaceae / Malvaceae",
+    group:"Composite dish", groupSec:"Added sugar", processing:"Processed",
+    collectedFrom:"supermarket", production:"conventional",
+    collectionCountry:"United States of America",
+    nativeRegion:"Turkey (hazelnut) / C. America (cacao)",
+    nat:[41.0,29.0], col:[39.0,-96.0],
+    n:{water:0.03,carb:67.23,protein:7.20,lipid:23.14,ash:2.40}
+  }
+];
+
+/* ── Jitter overlapping collection-origin markers ── */
+(function jitterCollectionCoords(){
+  const buckets = {};
+  foods.forEach(f => {
+    const key = f.col[0]+","+f.col[1];
+    if(!buckets[key]) buckets[key] = [];
+    buckets[key].push(f);
+  });
+  Object.values(buckets).forEach(group => {
+    if(group.length <= 1) return;
+    const cLat = group[0].col[0], cLng = group[0].col[1];
+    const maxR = Math.min(5, 1.2 * Math.sqrt(group.length));
+    group.forEach((f, i) => {
+      const angle = i * 2.39996323;
+      const r = maxR * Math.sqrt((i+1) / group.length);
+      f.col = [
+        cLat + r * Math.cos(angle),
+        cLng + r * Math.sin(angle) / Math.cos(cLat * Math.PI / 180)
+      ];
+    });
+  });
+})();
+
+/* ── Jitter overlapping native-origin markers ── */
+(function jitterNativeCoords(){
+  const threshold = 2.5;
+  for(let i = 0; i < foods.length; i++){
+    for(let j = i+1; j < foods.length; j++){
+      const dLat = Math.abs(foods[i].nat[0] - foods[j].nat[0]);
+      const dLng = Math.abs(foods[i].nat[1] - foods[j].nat[1]);
+      if(dLat < threshold && dLng < threshold){
+        foods[j].nat = [
+          foods[j].nat[0] + (Math.random()-.5) * 3,
+          foods[j].nat[1] + (Math.random()-.5) * 3
+        ];
+      }
+    }
+  }
+})();
+
+/* ── Native country mapping ── */
+const NATIVE_COUNTRIES = {
+  GGB100039:["Turkey"], GGB100043:["Guatemala"], GGB100045:["Turkey"],
+  GGB100055:["Mexico"], GGB100066:["Iraq"], GGB100069:["China"],
+  GGB100072:["Bolivia"], GGB100090:["India"], GGB100173:["United Kingdom"],
+  GGB100178:["Italy"], GGB100183:["China"], GGB100197:["Turkey"],
+  GGB100281:["Portugal"], GGB100283:["United States of America"],
+  GGB100340:["Syria"], GGB100360:["Peru"], GGB100438:["Nigeria"],
+  GGB100572:["Thailand"], GGB100576:["Iraq"], GGB101163:["Australia"],
+  GGB101493:["United States of America"], GGB101501:["Iran"],
+  GGB101510:["Ireland"], GGB101520:["Costa Rica"], GGB101609:["Iraq"],
+  GGB101641:["China"], GGB102192:["Greece"], GGB102212:["China"],
+  GGB102403:["Mexico"], GGB102408:["Turkey"]
+};
+foods.forEach(f => { f.nativeCountries = NATIVE_COUNTRIES[f.id] || []; });
+
+/* ── Map setup ── */
+const map = L.map("map", {
+  center: [20, 15],
+  zoom: 2,
+  minZoom: 2,
+  maxZoom: 8,
+  zoomControl: true,
+  attributionControl: true,
+  worldCopyJump: true
+});
+
+const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
+const darkTiles  = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",  {attribution:TILE_ATTR, subdomains:"abcd", maxZoom:19});
+const lightTiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {attribution:TILE_ATTR, subdomains:"abcd", maxZoom:19});
+lightTiles.addTo(map);
+
+/* ── State ── */
+let currentView = "native";
+let activeGroups = new Set(Object.keys(GROUP_COLORS));
+let showRoutes = false;
+let showHeatmap = true;
+let showMarkers = false;
+let selectedFood = null;
+let selectedCountryLayer = null;
+let selectedItem = "";
+let isDark = false;
+const markers = [];
+const routeLines = [];
+
+/* ── Build filter list ── */
+const filterList = document.getElementById("filter-list");
+const groupCounts = {};
+foods.forEach(f => { groupCounts[f.group] = (groupCounts[f.group]||0) + 1; });
+
+Object.entries(GROUP_COLORS).forEach(([group, color]) => {
+  if(!groupCounts[group]) return;
+  const el = document.createElement("div");
+  el.className = "filter-item";
+  el.dataset.group = group;
+  el.innerHTML = `<div class="filter-swatch" style="background:${color}"></div>
+    <span>${group}</span>
+    <span class="filter-count">${groupCounts[group]}</span>`;
+  el.addEventListener("click", () => {
+    if(activeGroups.has(group)){
+      activeGroups.delete(group);
+      el.classList.add("off");
+    } else {
+      activeGroups.add(group);
+      el.classList.remove("off");
+    }
+    render();
+  });
+  filterList.appendChild(el);
+});
+
+/* ── Populate food dropdown ── */
+const foodSelect = document.getElementById("food-select");
+Object.keys(PRODUCTION_DATA).sort((a,b)=>{
+  return ITEM_DISPLAY[a].localeCompare(ITEM_DISPLAY[b]);
+}).forEach(item => {
+  const opt = document.createElement("option");
+  opt.value = item;
+  opt.textContent = ITEM_DISPLAY[item];
+  opt.style.color = GROUP_COLORS[ITEM_TO_GROUP[item]];
+  foodSelect.appendChild(opt);
+});
+foodSelect.addEventListener("change", e => {
+  selectedItem = e.target.value;
+  render();
+});
+
+/* ── Toggle buttons ── */
+document.querySelectorAll(".toggle-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentView = btn.dataset.view;
+    render();
+  });
+});
+
+document.getElementById("show-routes").addEventListener("change", e => {
+  showRoutes = e.target.checked;
+  render();
+});
+
+document.getElementById("show-heatmap").addEventListener("change", e => {
+  showHeatmap = e.target.checked;
+  render();
+});
+
+document.getElementById("show-markers").addEventListener("change", e => {
+  showMarkers = e.target.checked;
+  render();
+});
+
+/* ── Theme toggle ── */
+document.getElementById("theme-btn").addEventListener("click", () => {
+  isDark = !isDark;
+  document.body.classList.toggle("light", !isDark);
+  if(isDark){
+    map.removeLayer(lightTiles);
+    darkTiles.addTo(map);
+  } else {
+    map.removeLayer(darkTiles);
+    lightTiles.addTo(map);
+  }
+  document.getElementById("theme-icon").innerHTML  = isDark ? "&#9788;" : "&#9790;";
+  document.getElementById("theme-label").textContent = isDark ? "Light mode" : "Dark mode";
+  render();
+});
+
+/* ── Marker helpers ── */
+function createMarkerIcon(food, isSelected){
+  const color = GROUP_COLORS[food.group] || "#888";
+  const size = isSelected ? 16 : 11;
+  const ringColor = isDark ? "rgba(255,255,255,.6)" : "rgba(255,255,255,.85)";
+  const border = isSelected ? "2.5px solid #fff" : `2px solid ${ringColor}`;
+  const shadow = isSelected
+    ? `0 0 0 4px ${color}44, 0 0 16px ${color}66`
+    : isDark ? `0 0 8px ${color}55` : `0 0 6px ${color}88, 0 1px 3px rgba(0,0,0,.3)`;
+  return L.divIcon({
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${color};border:${border};
+      box-shadow:${shadow};cursor:pointer;
+      transition:all .2s ease
+    "></div>`
+  });
+}
+
+function getCoords(food){
+  return currentView === "native" ? food.nat : food.col;
+}
+
+/* ── Curved route line ── */
+function curvedLatLngs(from, to, segments){
+  segments = segments || 40;
+  const pts = [];
+  const midLat = (from[0] + to[0]) / 2;
+  let midLng = (from[1] + to[1]) / 2;
+  const dLng = to[1] - from[1];
+  const curveOffset = Math.min(20, Math.abs(dLng) * 0.15 + 5);
+  const perpLat = midLat + curveOffset * (dLng > 0 ? 1 : -1) * 0.3;
+  for(let i = 0; i <= segments; i++){
+    const t = i / segments;
+    const lat = (1-t)*(1-t)*from[0] + 2*(1-t)*t*perpLat + t*t*to[0];
+    const lng = (1-t)*(1-t)*from[1] + 2*(1-t)*t*midLng + t*t*to[1];
+    pts.push([lat, lng]);
+  }
+  return pts;
+}
+
+/* ── Update all markers and routes ── */
+function updateMarkers(){
+  markers.forEach(m => map.removeLayer(m));
+  markers.length = 0;
+  routeLines.forEach(l => map.removeLayer(l));
+  routeLines.length = 0;
+
+  let visCount = 0;
+
+  foods.forEach(food => {
+    if(!activeGroups.has(food.group)) return;
+    visCount++;
+    const coords = getCoords(food);
+
+    if(showMarkers){
+      const icon = createMarkerIcon(food, selectedFood === food.id);
+      const marker = L.marker(coords, { icon, riseOnHover: true });
+      marker.bindTooltip(tooltipContent(food), {
+        className: "custom-tooltip",
+        direction: "top",
+        offset: [0, -8],
+        opacity: 1
+      });
+      marker.on("click", () => showDetail(food));
+      marker.addTo(map);
+      markers.push(marker);
+    }
+
+    if(showRoutes){
+      const color = GROUP_COLORS[food.group] || "#888";
+      const pts = curvedLatLngs(food.nat, food.col);
+      const line = L.polyline(pts, {
+        color, weight: 1.5, opacity: 0.35,
+        dashArray: "6,4", className: "route-line"
+      }).addTo(map);
+      routeLines.push(line);
+    }
+  });
+
+  document.getElementById("map-stats").textContent =
+    `${visCount} of ${foods.length} foods shown · ${currentView === "native" ? "Native origin" : "Sample collection"} view`;
+}
+
+function tooltipContent(food){
+  const nameClr = isDark ? "#f0f1f3" : "#111827";
+  const mutedClr = isDark ? "#9aa0a6" : "#6b7280";
+  const midClr   = isDark ? "#b8bcc4" : "#4b5563";
+  return `<div style="font-family:'Segoe UI',system-ui,sans-serif;padding:2px 0">
+    <div style="font-weight:600;font-size:.82rem;color:${nameClr}">${food.name}</div>
+    <div style="font-size:.7rem;color:${mutedClr};font-style:italic">${food.sci}</div>
+    <div style="font-size:.7rem;color:${GROUP_COLORS[food.group]};margin-top:2px">${food.group} · ${food.groupSec}</div>
+    <div style="font-size:.68rem;color:${midClr};margin-top:2px">${
+      currentView === "native"
+        ? "Native: " + food.nativeRegion
+        : "Collected: " + food.collectionCountry
+    }</div>
+  </div>`;
+}
+
+/* ── Tooltip styling injected ── */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `.custom-tooltip{
+    background:var(--tooltip-bg)!important;
+    border:1px solid var(--tooltip-border)!important;
+    border-radius:7px!important;
+    padding:7px 11px!important;
+    box-shadow:0 4px 20px var(--shadow)!important;
+    backdrop-filter:blur(6px)
+  }
+  .custom-tooltip::before{border-top-color:var(--tooltip-bg)!important}
+  .route-line{pointer-events:none}`;
+  document.head.appendChild(s);
+})();
+
+/* ── Detail panel ── */
+function showDetail(food){
+  selectedFood = food.id;
+  render();
+  const panel = document.getElementById("detail-panel");
+  const color = GROUP_COLORS[food.group];
+
+  document.getElementById("dp-name").textContent = food.name;
+  document.getElementById("dp-sci").textContent = food.sci;
+  document.getElementById("dp-badge-wrap").innerHTML =
+    `<span class="dp-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${food.group} · ${food.groupSec}</span>`;
+
+  const n = food.n;
+  const total = n.water + n.carb + n.protein + n.lipid + n.ash;
+  const pct = k => ((n[k] / total) * 100).toFixed(1);
+
+  let html = `
+  <div class="dp-section">
+    <div class="dp-section-title">Sample Information</div>
+    <div class="dp-row"><span class="dp-row-label">Family</span><span class="dp-row-value">${food.family}</span></div>
+    <div class="dp-row"><span class="dp-row-label">Processing</span><span class="dp-row-value">${food.processing}</span></div>
+    <div class="dp-row"><span class="dp-row-label">Collected from</span><span class="dp-row-value">${food.collectedFrom}</span></div>
+    <div class="dp-row"><span class="dp-row-label">Production</span><span class="dp-row-value">${food.production}</span></div>
+  </div>
+  <div class="dp-section">
+    <div class="dp-section-title">Geography</div>
+    <div class="dp-row"><span class="dp-row-label">Native origin</span><span class="dp-row-value">${food.nativeRegion}</span></div>
+    <div class="dp-row"><span class="dp-row-label">Collection</span><span class="dp-row-value">${food.collectionCountry}</span></div>
+  </div>
+  <div class="dp-section">
+    <div class="dp-section-title">Macronutrient Composition (g/100 g)</div>
+    <div class="macro-bar-container">
+      <div class="macro-bar">
+        <div class="macro-bar-seg" style="width:${pct("water")}%;background:${MACRO_COLORS.Water}" title="Water ${n.water.toFixed(1)}"></div>
+        <div class="macro-bar-seg" style="width:${pct("carb")}%;background:${MACRO_COLORS.Carbohydrate}" title="Carb ${n.carb.toFixed(1)}"></div>
+        <div class="macro-bar-seg" style="width:${pct("protein")}%;background:${MACRO_COLORS.Protein}" title="Protein ${n.protein.toFixed(1)}"></div>
+        <div class="macro-bar-seg" style="width:${pct("lipid")}%;background:${MACRO_COLORS.Lipid}" title="Lipid ${n.lipid.toFixed(1)}"></div>
+        <div class="macro-bar-seg" style="width:${pct("ash")}%;background:${MACRO_COLORS.Ash}" title="Ash ${n.ash.toFixed(1)}"></div>
+      </div>
+      <div class="macro-legend">
+        ${Object.entries(MACRO_COLORS).map(([k,c]) => {
+          const key = k === "Carbohydrate" ? "carb" : k.toLowerCase();
+          return `<span class="macro-legend-item">
+            <span class="macro-legend-swatch" style="background:${c}"></span>
+            ${k} <span class="macro-legend-val">${n[key].toFixed(1)}</span>
+          </span>`;
+        }).join("")}
+      </div>
+    </div>
+  </div>
+  <div class="dp-section">
+    <div class="dp-section-title">Detailed Composition</div>
+    <div class="dp-row"><span class="dp-row-label">Water</span><span class="dp-row-value">${n.water.toFixed(2)} g</span></div>
+    <div class="dp-row"><span class="dp-row-label">Carbohydrate</span><span class="dp-row-value">${n.carb.toFixed(2)} g</span></div>
+    <div class="dp-row"><span class="dp-row-label">Protein</span><span class="dp-row-value">${n.protein.toFixed(2)} g</span></div>
+    <div class="dp-row"><span class="dp-row-label">Lipid</span><span class="dp-row-value">${n.lipid.toFixed(2)} g</span></div>
+    <div class="dp-row"><span class="dp-row-label">Ash</span><span class="dp-row-value">${n.ash.toFixed(2)} g</span></div>
+  </div>`;
+
+  document.getElementById("dp-body").innerHTML = html;
+  panel.style.display = "block";
+}
+
+function closeDetail(){
+  document.getElementById("detail-panel").style.display = "none";
+  selectedFood = null;
+  if(selectedCountryLayer && countryLayer) countryLayer.resetStyle(selectedCountryLayer);
+  selectedCountryLayer = null;
+  render();
+}
+
+map.on("click", e => {
+  if(e.originalEvent.target === map.getContainer() ||
+     e.originalEvent.target.classList.contains("leaflet-tile")){
+    closeDetail();
+  }
+});
+
+/* ── Color utilities ── */
+function hexToRgb(hex){
+  return {r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)};
+}
+function rgbToHex(r,g,b){
+  return "#"+[r,g,b].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,"0")).join("");
+}
+function blendFoodColors(foodList){
+  const gc={};
+  foodList.forEach(f=>{ if(activeGroups.has(f.group)) gc[f.group]=(gc[f.group]||0)+1; });
+  let r=0,g=0,b=0,t=0;
+  Object.entries(gc).forEach(([grp,cnt])=>{
+    const c=hexToRgb(GROUP_COLORS[grp]);
+    r+=c.r*cnt; g+=c.g*cnt; b+=c.b*cnt; t+=cnt;
+  });
+  return t===0 ? null : rgbToHex(Math.round(r/t),Math.round(g/t),Math.round(b/t));
+}
+
+/* ── Country heatmap ── */
+let countryLayer=null, countryGeoData=null;
+
+function getProductionForCountry(geoName){
+  const result = {};
+  if(selectedItem){
+    const countries = PRODUCTION_DATA[selectedItem];
+    if(countries && countries[geoName]) result[selectedItem] = countries[geoName];
+  } else {
+    Object.entries(PRODUCTION_DATA).forEach(([item, countries]) => {
+      if(!activeGroups.has(ITEM_TO_GROUP[item])) return;
+      if(countries[geoName]) result[item] = countries[geoName];
+    });
+  }
+  return result;
+}
+
+function blendProductionColors(prod){
+  let r=0,g=0,b=0,total=0;
+  Object.entries(prod).forEach(([item,tonnes])=>{
+    const grp = ITEM_TO_GROUP[item];
+    const c = hexToRgb(GROUP_COLORS[grp]);
+    r+=c.r*tonnes; g+=c.g*tonnes; b+=c.b*tonnes; total+=tonnes;
+  });
+  if(total===0) return null;
+  return rgbToHex(Math.round(r/total),Math.round(g/total),Math.round(b/total));
+}
+
+function formatTonnes(t){
+  if(t>=1e6) return (t/1e6).toFixed(1)+'M tonnes';
+  if(t>=1e3) return (t/1e3).toFixed(1)+'K tonnes';
+  return Math.round(t)+' tonnes';
+}
+
+function getItemMax(){
+  if(!selectedItem) return PROD_GLOBAL_MAX;
+  const countries = PRODUCTION_DATA[selectedItem];
+  if(!countries) return 1;
+  return Math.max(...Object.values(countries));
+}
+
+function countryStyle(feature){
+  const prod = getProductionForCountry(feature.properties.name);
+  const total = Object.values(prod).reduce((s,v)=>s+v,0);
+  if(total===0) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
+  let color;
+  if(selectedItem){
+    color = GROUP_COLORS[ITEM_TO_GROUP[selectedItem]];
+  } else {
+    color = blendProductionColors(prod);
+  }
+  if(!color) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
+  const maxVal = getItemMax();
+  const t = Math.log10(1+total)/Math.log10(1+maxVal);
+  const op = 0.2 + 0.6*t;
+  return {fillColor:color, fillOpacity:op, color:color, weight:1, opacity:Math.min(0.9,op+0.15)};
+}
+
+function updateHeatmap(){
+  if(countryLayer){ map.removeLayer(countryLayer); countryLayer=null; }
+  const legend = document.getElementById("heat-legend");
+  if(!showHeatmap || !countryGeoData){
+    if(legend) legend.style.display="none";
+    return;
+  }
+  if(legend) legend.style.display = "block";
+
+  countryLayer = L.geoJSON(countryGeoData, {
+    style: countryStyle,
+    onEachFeature: function(ft, layer){
+      const prod = getProductionForCountry(ft.properties.name);
+      const total = Object.values(prod).reduce((s,v)=>s+v,0);
+      if(!total) return;
+
+      const tipLabel = selectedItem ? ITEM_DISPLAY[selectedItem] : 'Total';
+      layer.bindTooltip(
+        `<b>${ft.properties.name}</b><br>${tipLabel}: ${formatTonnes(total)}`,
+        {sticky:true, className:"custom-tooltip", direction:"top"}
+      );
+
+      layer.on("click", function(e){
+        if(selectedCountryLayer && countryLayer) countryLayer.resetStyle(selectedCountryLayer);
+        selectedCountryLayer = e.target;
+        e.target.setStyle({ weight:2.5, color:'#2563eb', opacity:1 });
+        e.target.bringToFront();
+        showCountryDetail(ft.properties.name);
+      });
+      layer.on("mouseover", function(e){
+        if(e.target !== selectedCountryLayer){
+          e.target.setStyle({ weight:2.5, color:'#2563eb', opacity:1 });
+          e.target.bringToFront();
+        }
+      });
+      layer.on("mouseout", function(e){
+        if(e.target !== selectedCountryLayer && countryLayer) countryLayer.resetStyle(e.target);
+      });
+    }
+  }).addTo(map);
+}
+
+function showCountryDetail(countryName){
+  selectedFood = null;
+  const panel = document.getElementById("detail-panel");
+  const prod = getProductionForCountry(countryName);
+  const entries = Object.entries(prod).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((s,[,v])=>s+v,0);
+
+  document.getElementById("dp-name").textContent = countryName;
+  document.getElementById("dp-sci").textContent = "Production data (FAO)";
+
+  const groups = [...new Set(entries.map(([item])=>ITEM_TO_GROUP[item]))];
+  document.getElementById("dp-badge-wrap").innerHTML = groups.map(g=>{
+    const c=GROUP_COLORS[g];
+    return `<span class="dp-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${g}</span> `;
+  }).join("");
+
+  let html = `<div class="dp-section">
+    <div class="dp-section-title">Total Production</div>
+    <div class="dp-row"><span class="dp-row-label">Combined</span><span class="dp-row-value">${formatTonnes(total)}</span></div>
+  </div>`;
+
+  html += `<div class="dp-section">
+    <div class="dp-section-title">${entries.length} food${entries.length>1?"s":""} produced</div>`;
+
+  entries.forEach(([item, tonnes])=>{
+    const c = GROUP_COLORS[ITEM_TO_GROUP[item]];
+    const pct = total>0 ? ((tonnes/total)*100).toFixed(1) : "0";
+    html += `<div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0"></div>
+        <span style="font-size:.8rem;font-weight:500;flex:1">${ITEM_DISPLAY[item]}</span>
+        <span style="font-size:.76rem;font-weight:600">${formatTonnes(tonnes)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;height:6px;background:var(--bar-bg);border-radius:3px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${c};border-radius:3px"></div>
+        </div>
+        <span style="font-size:.65rem;color:var(--text-muted);min-width:32px;text-align:right">${pct}%</span>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  document.getElementById("dp-body").innerHTML = html;
+  panel.style.display = "block";
+}
+
+/* ── Master render ── */
+function render(){ updateHeatmap(); updateMarkers(); }
+
+/* ── Fix antimeridian crossing (Russia, Fiji, etc.) ── */
+function fixAntimeridian(geojson){
+  geojson.features.forEach(f=>{
+    const processRing = ring=>{
+      for(let i=1;i<ring.length;i++){
+        const dLng = ring[i][0]-ring[i-1][0];
+        if(dLng>180) ring[i][0]-=360;
+        else if(dLng<-180) ring[i][0]+=360;
+      }
+    };
+    const g=f.geometry;
+    if(g.type==='Polygon') g.coordinates.forEach(processRing);
+    else if(g.type==='MultiPolygon') g.coordinates.forEach(p=>p.forEach(processRing));
+  });
+  return geojson;
+}
+
+/* ── Load country boundaries ── */
+fetch("https://unpkg.com/world-atlas@2.0.2/countries-110m.json")
+  .then(r=>r.json())
+  .then(topo=>{
+    countryGeoData = fixAntimeridian(topojson.feature(topo, topo.objects.countries));
+    updateHeatmap();
+  })
+  .catch(e=>console.warn("Could not load country boundaries:", e));
+
+/* ── Initial render ── */
+render();
+</script>
+</body>
+</html>
