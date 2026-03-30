@@ -66,12 +66,12 @@
       </div>
     </nav>
     <h1>Food Network Viewer</h1>
-    <p class="sub">Paste your tab-separated food table, pick which feature families to include, and render an offline network. This file uses no external libraries, so it opens locally in a browser.</p>
+    <p class="sub">Paste your tab-separated food table and select which feature families to include.</p>
     <div class="layout">
       <div class="panel controls">
         <div class="section">
           <h2>1) Paste your table</h2>
-          <p class="hint">Paste the full table exactly as tab-separated text, including the header row. Each food row becomes a sample node. To avoid a giant hairball, the graph only links each sample to its strongest selected features.</p>
+          <p class="hint">Paste the full table exactly as tab-separated text, including the header row. Each food row becomes a sample node. The graph only links each sample to its strongest selected features.</p>
           <textarea id="tsvInput"></textarea>
           <div class="btns"><button id="loadSampleBtn">Load example rows</button><button id="clearBtn">Clear</button></div>
         </div>
