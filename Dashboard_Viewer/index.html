@@ -59,8 +59,8 @@
         font-size: 0.92em;
       }
 
-      /* Navigation */
-      .nav {
+      /* Site-wide Navigation */
+      .site-nav {
         background: rgba(255, 253, 249, 0.98);
         border-bottom: 1px solid rgba(157, 115, 53, 0.14);
         position: sticky;
@@ -69,7 +69,7 @@
         backdrop-filter: blur(8px);
       }
 
-      .nav-container {
+      .site-nav .nav-container {
         width: min(var(--max), calc(100% - 30px));
         margin: auto;
         display: flex;
@@ -79,20 +79,20 @@
         gap: 20px;
       }
 
-      .nav-brand {
+      .site-nav .nav-brand {
         font-weight: 700;
         font-size: 1.1rem;
         color: var(--gold-deep);
         text-decoration: none;
       }
 
-      .nav-links {
+      .site-nav .nav-links {
         display: flex;
         gap: 8px;
         align-items: center;
       }
 
-      .nav-links a {
+      .site-nav .nav-links a {
         padding: 8px 16px;
         border-radius: 12px;
         font-size: 0.92rem;
@@ -102,23 +102,23 @@
         border: 1px solid transparent;
       }
 
-      .nav-links a:hover {
+      .site-nav .nav-links a:hover {
         background: rgba(157, 115, 53, 0.08);
         color: var(--gold-deep);
       }
 
-      .nav-links a.active {
+      .site-nav .nav-links a.active {
         background: rgba(157, 115, 53, 0.12);
         color: var(--gold-deep);
         border-color: rgba(157, 115, 53, 0.2);
       }
 
       @media (max-width: 640px) {
-        .nav-container {
+        .site-nav .nav-container {
           flex-direction: column;
           align-items: flex-start;
         }
-        .nav-links {
+        .site-nav .nav-links {
           flex-wrap: wrap;
         }
       }
@@ -279,16 +279,17 @@
         height: 100px;
       }
 
-      .nav {
+      /* Page Navigation */
+      .page-nav {
         position: sticky;
-        top: 0;
-        z-index: 30;
+        top: 58px; /* Height of site-nav */
+        z-index: 90;
         backdrop-filter: blur(14px);
         background: rgba(246, 241, 232, 0.88);
         border-bottom: 1px solid rgba(231, 221, 207, 0.95);
       }
 
-      .nav-inner {
+      .page-nav .nav-inner {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -297,19 +298,19 @@
         overflow-x: auto;
       }
 
-      .brand {
+      .page-nav .brand {
         white-space: nowrap;
         font-weight: 800;
         color: var(--gold-deep);
       }
 
-      .nav-links {
+      .page-nav .nav-links {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       }
 
-      .nav-links a {
+      .page-nav .nav-links a {
         padding: 9px 12px;
         border-radius: 999px;
         color: var(--muted);
@@ -317,7 +318,7 @@
         font-weight: 650;
       }
 
-      .nav-links a:hover {
+      .page-nav .nav-links a:hover {
         background: rgba(157, 115, 53, 0.1);
         color: var(--ink);
       }
@@ -782,14 +783,14 @@
     </style>
   </head>
   <body>
-    <nav class="nav">
+    <nav class="site-nav">
       <div class="nav-container">
         <a href="/" class="nav-brand">PTFI Visualization</a>
         <div class="nav-links">
           <a href="/" title="Home">Home</a>
-          <a href="/Dashboard_Viewer/" class="active" title="Dashboard">Dashboard</a>
-          <a href="/Network_Viewer/food_network.html" title="Network Viewer">Network</a>
-          <a href="/UMAP_Viewer/umap_dashboard.html" title="UMAP">UMAP</a>
+          <a href="/dashboard/" class="active" title="Dashboard">Dashboard</a>
+          <a href="/network/food_network.html" title="Network Viewer">Network</a>
+          <a href="/umap/umap_dashboard.html" title="UMAP">UMAP</a>
         </div>
       </div>
     </nav>
@@ -848,7 +849,7 @@
       </div>
     </header>
 
-    <nav class="nav">
+    <nav class="page-nav">
       <div class="container nav-inner">
         <div class="brand">The Chickpea Atlas</div>
         <div class="nav-links">
