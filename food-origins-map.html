@@ -206,7 +206,7 @@ body.light{
 
 <div id="header">
   <h1>PTFI — Global Food Origins</h1>
-  <p>30 foods from the Periodic Table of Food Initiative, mapped by native geographical origin and sample collection location. Toggle views, filter by food group, and click markers for nutritional details.</p>
+  <p>30 foods from the Periodic Table of Food Initiative. The heatmap shows FAO production volume (tonnes) for 12 key foods. Toggle food markers for native origin and collection locations, filter by food group, and click countries or markers for details.</p>
 </div>
 
 <div id="controls">
@@ -254,6 +254,26 @@ body.light{
   <div class="dp-body" id="dp-body"></div>
 </div>
 
+<div id="heat-legend" style="position:absolute;bottom:26px;right:12px;z-index:1000;
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  padding:8px 14px;backdrop-filter:blur(8px)">
+  <div style="font-size:.66rem;color:var(--text-muted);margin-bottom:4px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.05em">Production Heatmap</div>
+  <div style="font-size:.63rem;color:var(--text-dim);margin-bottom:4px">
+    Color = food group blend &middot; Opacity = volume</div>
+  <div style="display:flex;flex-wrap:wrap;gap:3px 8px">
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#4CAF50"></span>Legumes</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#FFB300"></span>Grains</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#E91E63"></span>Fruits</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#009688"></span>Vegetables</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:.63rem;color:var(--text-muted)">
+      <span style="width:8px;height:8px;border-radius:2px;background:#FF5722"></span>Animal Products</span>
+  </div>
+</div>
 <div id="map-stats"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -275,6 +295,25 @@ const MACRO_COLORS = {
   Lipid:        "#AB47BC",
   Ash:          "#78909C"
 };
+
+const PRODUCTION_DATA = {"Artichokes":{"Algeria":64395,"Argentina":55110,"Australia":452,"Bulgaria":280,"Chile":21268,"China":58937,"Costa Rica":39,"Cyprus":2284,"Egypt":211806,"France":50188,"Greece":22513,"Hungary":43,"Iran":15378,"Israel":3728,"Italy":442459,"Kazakhstan":377,"Kenya":49,"Lebanon":1590,"Lithuania":16,"Malta":1266,"Mexico":3101,"Morocco":44882,"Palestine":26,"Peru":79062,"Poland":200,"Portugal":1,"Réunion":279,"Romania":961,"Spain":231125,"Switzerland":3,"Syria":7038,"Tunisia":20249,"Turkey":31693,"United States of America":42295,"Uzbekistan":2501,"Zambia":425,"Zimbabwe":246},"Sweet potatoes":{"Angola":1021466,"Antigua and Barb.":199,"Argentina":213715,"Australia":54327,"Bahamas":1213,"Bahrain":12,"Bangladesh":316984,"Barbados":2232,"Belize":132,"Benin":64009,"Bhutan":202,"Bolivia":7756,"Botswana":1209,"Brazil":606743,"Brunei":239,"Burkina Faso":66181,"Burundi":804064,"Cape Verde":5956,"Cambodia":41492,"Cameroon":311670,"Chad":125156,"Chile":11485,"China":80121288,"Comoros":8766,"Congo":8353,"Cook Islands":634,"Costa Rica":576,"Côte d'Ivoire":50184,"Cuba":364836,"North Korea":416961,"Dem. Rep. Congo":394026,"Dominica":2244,"Dominican Rep.":46260,"Ecuador":3050,"Egypt":329290,"El Salvador":636,"Eq. Guinea":73533,"eSwatini":2522,"Ethiopia":1015434,"Fiji":7217,"French Polynesia":147,"Gabon":3246,"Ghana":118631,"Greece":3729,"Grenada":524,"Guadeloupe":3468,"Guatemala":994,"Guinea":219608,"Guinea-Bissau":39497,"Guyana":8778,"Haiti":221265,"Honduras":9912,"India":1167270,"Indonesia":1924481,"Israel":23888,"Italy":12375,"Jamaica":35754,"Japan":934813,"Kenya":683739,"Kuwait":35,"Laos":116453,"Liberia":21123,"Madagascar":880999,"Malawi":6177824,"Malaysia":35976,"Maldives":42,"Mali":278964,"Martinique":985,"Mauritania":3320,"Mauritius":854,"Mexico":55566,"Micronesia (Federated States of)":3099,"Morocco":12597,"Mozambique":543618,"Myanmar":51526,"New Caledonia":739,"New Zealand":15604,"Niger":101312,"Nigeria":3094862,"Niue":250,"Pakistan":11268,"Palestine":4188,"Panama":295,"Papua New Guinea":597066,"Paraguay":73627,"Peru":243867,"Philippines":557355,"Portugal":23595,"Puerto Rico":1837,"South Korea":319731,"Réunion":444,"Rwanda":982725,"St. Kitts and Nevis":184,"Saint Lucia":586,"St. Vin. and Gren.":2021,"Senegal":48494,"Sierra Leone":143085,"Singapore":1,"Solomon Is.":92007,"Somalia":7328,"South Africa":63125,"Spain":25564,"Sri Lanka":48303,"Sudan":252687,"Suriname":488,"Timor-Leste":12841,"Togo":6419,"Tonga":6232,"Trinidad and Tobago":830,"Uganda":1956209,"Tanzania":2044607,"United States of America":973667,"Uruguay":70393,"Vanuatu":11831,"Venezuela":14846,"Vietnam":1431627,"Yemen":333,"Zambia":123234,"Zimbabwe":145084},"Rice":{"Afghanistan":525868,"Algeria":426,"Angola":16913,"Argentina":1204780,"Australia":721368,"Azerbaijan":9194,"Bangladesh":44374730,"Belize":14380,"Benin":198268,"Bhutan":59157,"Bolivia":417448,"Brazil":11172093,"Brunei":1753,"Bulgaria":39569,"Burkina Faso":235208,"Burundi":81518,"Cambodia":7535535,"Cameroon":157516,"Central African Rep.":26076,"Chad":184931,"Chile":132858,"China":198438485,"Colombia":2274086,"Comoros":492,"Congo":1193,"Costa Rica":197154,"Côte d'Ivoire":1212570,"Cuba":456501,"North Korea":2299311,"Dem. Rep. Congo":768940,"Dominican Rep.":742071,"Ecuador":1326907,"Egypt":5437347,"El Salvador":34350,"eSwatini":660,"Ethiopia":169425,"Fiji":11296,"France":100171,"French Guiana":24067,"Gabon":1354,"Gambia":38476,"Ghana":541900,"Greece":210050,"Guatemala":29610,"Guinea":1762874,"Guinea-Bissau":151186,"Guyana":690524,"Haiti":133994,"Honduras":41540,"Hungary":9813,"India":150991184,"Indonesia":54463569,"Iran":2741573,"Iraq":253260,"Italy":1441103,"Jamaica":59,"Japan":11180579,"Kazakhstan":343884,"Kenya":95597,"Kyrgyzstan":25034,"Laos":2929796,"Liberia":218119,"Madagascar":3593755,"Malawi":100954,"Malaysia":2347726,"Mali":1660125,"Mauritania":176452,"Mauritius":135,"Mexico":282585,"Micronesia (Federated States of)":137,"Morocco":41740,"Mozambique":167045,"Myanmar":25366114,"Nepal":4587953,"Nicaragua":347561,"Niger":87052,"Nigeria":5237772,"North Macedonia":18963,"Pakistan":9201302,"Panama":302936,"Papua New Guinea":791,"Paraguay":461363,"Peru":2567581,"Philippines":15768545,"Portugal":159635,"Puerto Rico":660,"South Korea":6030871,"Réunion":124,"Romania":27549,"Russia":793126,"Rwanda":68781,"Saudi Arabia":475,"Senegal":601998,"Sierra Leone":819487,"Solomon Is.":2681,"Somalia":5205,"South Africa":3073,"S. Sudan":23994,"Spain":749348,"Sri Lanka":3540843,"Sudan":37977,"Suriname":220106,"Syria":149,"Tajikistan":76636,"Thailand":29971836,"Timor-Leste":64994,"Togo":111451,"Trinidad and Tobago":3611,"Turkey":675430,"Turkmenistan":68460,"Uganda":183441,"Ukraine":80766,"Tanzania":2033702,"United States of America":9171780,"Uruguay":1204768,"Uzbekistan":298763,"Venezuela":801750,"Vietnam":37684254,"Zambia":28907,"Zimbabwe":839},"Pumpkins, squash and gourds":{"Albania":11990,"Algeria":226732,"Antigua and Barb.":314,"Argentina":293637,"Australia":108949,"Austria":18010,"Azerbaijan":15545,"Bahamas":2100,"Bahrain":1029,"Bangladesh":389833,"Barbados":444,"Belgium":33299,"Belize":255,"Bhutan":6053,"Bolivia":47279,"Brunei":679,"Bulgaria":22750,"Cape Verde":943,"Cameroon":143422,"Canada":86438,"Central African Rep.":24645,"Chile":131505,"China":5904535,"Colombia":80614,"Côte d'Ivoire":19380,"Croatia":6034,"Cuba":347971,"Cyprus":3478,"Czechia":14835,"North Korea":78901,"Dem. Rep. Congo":31222,"Denmark":1734,"Djibouti":15,"Dominica":1354,"Dominican Rep.":44413,"Ecuador":11982,"Egypt":595803,"El Salvador":7588,"Fiji":1577,"Finland":1852,"France":129186,"French Polynesia":143,"Georgia":3650,"Germany":94619,"Greece":14128,"Grenada":313,"Guadeloupe":258,"Guatemala":97349,"Guyana":29622,"Haiti":516,"Honduras":8009,"Hungary":19332,"India":3996340,"Indonesia":314288,"Iran":150904,"Iraq":73319,"Ireland":843,"Israel":17132,"Italy":506506,"Jamaica":45032,"Japan":215491,"Jordan":61437,"Kazakhstan":119153,"Kuwait":11604,"Kyrgyzstan":2810,"Latvia":3608,"Lebanon":29056,"Libya":31713,"Lithuania":2997,"Luxembourg":1121,"Malawi":438690,"Malaysia":21813,"Mali":53959,"Malta":2332,"Mauritius":17540,"Mexico":568378,"Morocco":184101,"Mozambique":942,"Nauru":0,"Netherlands":19152,"New Zealand":145299,"Niger":105029,"Oman":7165,"Pakistan":276899,"Palestine":46464,"Panama":16257,"Papua New Guinea":147,"Paraguay":7957,"Peru":163041,"Philippines":268824,"Poland":97719,"Portugal":38763,"Puerto Rico":13669,"Qatar":6555,"South Korea":283325,"Moldova":32391,"Réunion":1639,"Romania":171706,"Russia":991506,"Rwanda":211804,"Saint Lucia":385,"St. Vin. and Gren.":480,"Saudi Arabia":90352,"Senegal":20279,"Sierra Leone":1020,"Slovakia":12223,"Slovenia":5484,"South Africa":270900,"S. Sudan":65902,"Spain":472879,"Sri Lanka":181360,"Sudan":32668,"Sweden":7251,"Switzerland":10752,"Syria":111990,"Thailand":171037,"Tonga":18575,"Trinidad and Tobago":3850,"Tunisia":60337,"Turkey":465122,"Ukraine":933303,"United Arab Emirates":23684,"United States of America":827992,"Uruguay":23545,"Venezuela":67622,"Yemen":8510,"Zimbabwe":256910},"Cherries":{"Albania":12331,"Algeria":6322,"Argentina":6888,"Armenia":7277,"Australia":11411,"Austria":17351,"Azerbaijan":7822,"Belarus":3415,"Belgium":6195,"Bolivia":777,"Bosnia and Herz.":10090,"Bulgaria":36495,"Canada":12053,"Chile":132228,"China":25199,"Croatia":2852,"Cyprus":675,"Czechia":5151,"Denmark":1481,"Dominican Rep.":6137,"Estonia":248,"France":46285,"Georgia":7645,"Germany":60649,"Greece":62713,"Guyana":1415,"Hungary":11826,"India":8684,"Iran":200674,"Israel":2669,"Italy":112431,"Japan":17506,"Jordan":921,"Kazakhstan":7826,"Kyrgyzstan":4853,"Latvia":828,"Lebanon":37390,"Lithuania":797,"Luxembourg":65,"Mexico":164,"Montenegro":2051,"Morocco":8893,"Netherlands":2108,"New Zealand":2095,"North Macedonia":4675,"Norway":873,"Pakistan":2184,"Palestine":944,"Peru":174,"Poland":44029,"Portugal":13700,"Moldova":8952,"Romania":68169,"Russia":67506,"Serbia":22027,"Slovakia":2542,"Slovenia":2922,"South Africa":660,"Spain":94728,"Suriname":1127,"Switzerland":11468,"Syria":57690,"Tunisia":3901,"Turkey":419934,"Ukraine":65275,"United Kingdom":2576,"United States of America":263768,"Uzbekistan":81522},"Olives":{"Afghanistan":4732,"Albania":72806,"Algeria":477097,"Argentina":217857,"Australia":52051,"Azerbaijan":1339,"Bosnia and Herz.":332,"Brazil":963,"Chile":65485,"China":2674,"Croatia":28838,"Cyprus":16915,"Egypt":569590,"El Salvador":8384,"France":22536,"Greece":2529185,"Iran":65283,"Iraq":15251,"Israel":57134,"Italy":2885726,"Jordan":134737,"Kuwait":183,"Lebanon":122207,"Libya":172949,"Malta":57,"Mexico":16902,"Montenegro":1488,"Morocco":997083,"North Macedonia":13115,"Pakistan":2577,"Palestine":96200,"Peru":74729,"Portugal":521356,"Saudi Arabia":353955,"Slovenia":1666,"Spain":5861342,"Syria":747522,"Tunisia":911764,"Turkey":1555106,"United States of America":106362,"Uruguay":6079,"Uzbekistan":108},"Oats":{"Albania":24720,"Algeria":70116,"Argentina":472881,"Armenia":3667,"Australia":1344594,"Austria":113093,"Azerbaijan":4692,"Belarus":506786,"Belgium":23991,"Bolivia":11988,"Bosnia and Herz.":37183,"Brazil":518079,"Bulgaria":45460,"Canada":3510977,"Chile":417868,"China":680201,"Croatia":59280,"Cyprus":510,"Czechia":169326,"North Korea":15231,"Denmark":264564,"Ecuador":965,"Estonia":83706,"Ethiopia":52975,"Finland":1113864,"France":497902,"Georgia":3739,"Germany":906227,"Ghana":33,"Greece":89094,"Hungary":119384,"Iraq":365,"Ireland":161083,"Israel":328,"Italy":299196,"Japan":1088,"Kazakhstan":240430,"Kenya":3683,"Kyrgyzstan":2990,"Latvia":137961,"Lebanon":263,"Lesotho":375,"Lithuania":137496,"Luxembourg":6888,"Mexico":92010,"Mongolia":7404,"Montenegro":514,"Morocco":25673,"Netherlands":10286,"New Zealand":32949,"North Macedonia":4569,"Norway":298048,"Peru":13349,"Poland":1391355,"Portugal":56405,"Moldova":3800,"Romania":328405,"Russia":5388234,"Serbia":69591,"Slovakia":37092,"Slovenia":4642,"South Africa":38033,"Spain":873654,"Sweden":824210,"Switzerland":17685,"Syria":157,"Tajikistan":1952,"Tunisia":1471,"Turkey":264958,"Ukraine":696174,"United Kingdom":761120,"United States of America":1439365,"Uruguay":34475,"Uzbekistan":6181,"Zimbabwe":593},"Quinoa":{"Bhutan":42,"Bolivia":40417,"Ecuador":1782,"Peru":54209},"Lentils, dry":{"Algeria":5832,"Argentina":15740,"Armenia":60,"Australia":368479,"Azerbaijan":1207,"Bangladesh":140651,"Bhutan":43,"Bulgaria":2180,"Canada":1435376,"Chile":1866,"China":137994,"Colombia":1337,"Croatia":96,"Cyprus":7,"Czechia":8,"Ecuador":2044,"Egypt":2551,"Eritrea":176,"Ethiopia":93006,"France":14294,"Greece":3621,"Hungary":569,"India":1062186,"Iran":88425,"Iraq":1434,"Israel":32,"Italy":1435,"Jordan":703,"Kazakhstan":68483,"Kenya":2753,"Lebanon":2469,"Madagascar":785,"Malawi":1145,"Martinique":946,"Mexico":7321,"Morocco":24154,"Myanmar":1124,"Nepal":180568,"New Zealand":1968,"North Macedonia":109,"Pakistan":17852,"Palestine":1024,"Peru":3348,"Russia":56653,"Sierra Leone":2609,"Slovakia":745,"Spain":18841,"Syria":109277,"Tajikistan":688,"Tunisia":1131,"Turkey":448612,"Ukraine":3886,"United States of America":213126,"Uzbekistan":969,"Yemen":7858},"Meat of chickens, fresh or chilled":{"Afghanistan":22858,"Albania":10856,"Algeria":294993,"Angola":22176,"Antigua and Barb.":168,"Argentina":1498827,"Armenia":7563,"Australia":919112,"Austria":102505,"Azerbaijan":65626,"Bahamas":6993,"Bahrain":6298,"Bangladesh":151673,"Barbados":13513,"Belarus":270706,"Belgium":430279,"Belize":14558,"Benin":11743,"Bhutan":702,"Bolivia":320920,"Bosnia and Herz.":34529,"Botswana":3640,"Brazil":9633336,"Brunei":18958,"Bulgaria":90773,"Burkina Faso":146102,"Burundi":6531,"Cape Verde":601,"Cambodia":18042,"Cameroon":65002,"Canada":1060917,"Central African Rep.":4859,"Chad":5772,"Chile":509711,"China":11355004,"Colombia":1067967,"Comoros":549,"Congo":6133,"Cook Islands":43,"Costa Rica":105124,"Côte d'Ivoire":46962,"Croatia":41274,"Cuba":35664,"Cyprus":27973,"Czechia":170840,"North Korea":29340,"Dem. Rep. Congo":11099,"Denmark":170035,"Dominica":346,"Dominican Rep.":284427,"Ecuador":338645,"Egypt":971852,"El Salvador":102560,"Eq. Guinea":232,"Eritrea":1875,"Estonia":14846,"eSwatini":2223,"Ethiopia":52740,"Fiji":19190,"Finland":95340,"France":1378900,"French Guiana":471,"French Polynesia":634,"Gabon":3788,"Gambia":1186,"Georgia":15681,"Germany":764375,"Ghana":39094,"Greece":169135,"Grenada":597,"Guadeloupe":954,"Guatemala":222701,"Guinea":8278,"Guinea-Bissau":2066,"Guyana":28174,"Haiti":8018,"Honduras":139384,"Hungary":282563,"Iceland":6465,"India":2385950,"Indonesia":1928530,"Iran":1535700,"Iraq":84061,"Ireland":100483,"Israel":403042,"Italy":871719,"Jamaica":100684,"Japan":1669653,"Jordan":163575,"Kazakhstan":117470,"Kenya":42497,"Kiribati":675,"Kuwait":44230,"Kyrgyzstan":6975,"Laos":21135,"Latvia":21951,"Lebanon":110316,"Lesotho":829,"Liberia":9879,"Libya":112336,"Lithuania":64894,"Luxembourg":288,"Madagascar":38931,"Malawi":55289,"Malaysia":1112031,"Mali":38406,"Malta":4806,"Martinique":931,"Mauritania":4493,"Mauritius":38473,"Mexico":2590125,"Micronesia (Federated States of)":157,"Mongolia":182,"Montenegro":1474,"Morocco":376516,"Mozambique":59278,"Myanmar":671981,"Namibia":9575,"Nauru":4,"Nepal":56164,"Netherlands":789519,"New Caledonia":716,"New Zealand":157809,"Nicaragua":90815,"Niger":14748,"Nigeria":232855,"Niue":20,"North Macedonia":3140,"Norway":67091,"Oman":5678,"Pakistan":871208,"Palestine":56765,"Panama":129180,"Papua New Guinea":5946,"Paraguay":48550,"Peru":1017535,"Philippines":913929,"Poland":1183744,"Portugal":261100,"Puerto Rico":44228,"Qatar":11729,"South Korea":600822,"Moldova":33374,"Réunion":12572,"Romania":356714,"Russia":2633265,"Rwanda":8382,"St. Kitts and Nevis":113,"Saint Lucia":1276,"St. Vin. and Gren.":163,"Samoa":414,"São Tomé and Príncipe":567,"Saudi Arabia":588892,"Senegal":60590,"Serbia":95627,"Seychelles":815,"Sierra Leone":11188,"Singapore":78351,"Slovakia":64872,"Slovenia":53338,"Solomon Is.":269,"Somalia":3588,"South Africa":1291826,"S. Sudan":36202,"Spain":1159147,"Sri Lanka":129005,"Sudan":68435,"Suriname":7797,"Sweden":118912,"Switzerland":69402,"Syria":128245,"Tajikistan":7694,"Thailand":1338882,"Timor-Leste":864,"Togo":17181,"Tonga":298,"Trinidad and Tobago":50303,"Tunisia":111322,"Turkey":1356021,"Turkmenistan":15821,"Tuvalu":51,"Uganda":66489,"Ukraine":768767,"United Arab Emirates":39868,"United Kingdom":1422086,"Tanzania":72063,"United States of America":16481079,"Uruguay":63666,"Uzbekistan":51493,"Vanuatu":661,"Venezuela":677682,"Vietnam":584920,"Yemen":132117,"Zambia":40622,"Zimbabwe":62489},"Cheese from whole cow milk":{"Albania":17803,"Angola":1319,"Argentina":447057,"Armenia":13177,"Australia":347063,"Austria":158014,"Azerbaijan":40048,"Bangladesh":1058,"Belarus":130232,"Belgium":75530,"Bhutan":1478,"Bosnia and Herz.":7759,"Brazil":40177,"Bulgaria":64616,"Canada":419958,"Chile":69081,"China":2634,"Colombia":57553,"Costa Rica":1327,"Croatia":26757,"Cuba":15579,"Cyprus":1462,"Czechia":118165,"Denmark":356390,"Dominican Rep.":4451,"Ecuador":74669,"Egypt":260167,"El Salvador":2485,"Eritrea":536,"Estonia":29602,"Ethiopia":5403,"Finland":92284,"France":1676671,"Georgia":86,"Germany":1516936,"Greece":32432,"Guatemala":12693,"Honduras":2171,"Hungary":74398,"Iceland":8493,"India":6686,"Iran":27165,"Iraq":3947,"Ireland":168277,"Israel":98166,"Italy":1040162,"Japan":45721,"Kazakhstan":19284,"Kenya":333,"Kyrgyzstan":3146,"Latvia":27824,"Lebanon":16317,"Lithuania":74903,"Luxembourg":2990,"Mexico":139222,"Montenegro":8644,"Morocco":3597,"Namibia":260,"Netherlands":764324,"New Zealand":305566,"Nicaragua":37139,"North Macedonia":6155,"Norway":78030,"Oman":1407,"Panama":11672,"Peru":13360,"Poland":651568,"Portugal":58377,"Moldova":1974,"Romania":57293,"Russia":394453,"Saudi Arabia":128894,"Serbia":36509,"Slovakia":43452,"Slovenia":18384,"South Africa":56976,"S. Sudan":30478,"Spain":147130,"Sudan":346,"Sweden":105347,"Switzerland":174084,"Syria":43832,"Tajikistan":164,"Thailand":2611,"Tunisia":4210,"Turkey":186127,"Turkmenistan":658,"Ukraine":146286,"United Kingdom":402397,"Tanzania":10406,"United States of America":4643239,"Uruguay":45031,"Uzbekistan":59687,"Venezuela":176057,"Yemen":4282,"Zambia":2886,"Zimbabwe":2736}};
+
+const ITEM_TO_GROUP = {
+  "Artichokes":"Vegetables","Sweet potatoes":"Vegetables","Rice":"Grains",
+  "Pumpkins, squash and gourds":"Vegetables","Cherries":"Fruits","Olives":"Fruits",
+  "Oats":"Grains","Quinoa":"Grains","Lentils, dry":"Legumes",
+  "Meat of chickens, fresh or chilled":"Animal Products",
+  "Cheese from whole cow milk":"Animal Products"
+};
+
+const ITEM_DISPLAY = {
+  "Artichokes":"Artichoke","Sweet potatoes":"Sweet Potato","Rice":"Rice",
+  "Pumpkins, squash and gourds":"Pumpkin / Squash","Cherries":"Cherry","Olives":"Olive",
+  "Oats":"Oat","Quinoa":"Quinoa","Lentils, dry":"Lentil",
+  "Meat of chickens, fresh or chilled":"Chicken","Cheese from whole cow milk":"Cheese"
+};
+
+const PROD_GLOBAL_MAX = 296726951;
 
 const foods = [
   {
@@ -632,6 +671,7 @@ let showRoutes = false;
 let showHeatmap = true;
 let showMarkers = false;
 let selectedFood = null;
+let selectedCountryLayer = null;
 let isDark = false;
 const markers = [];
 const routeLines = [];
@@ -888,6 +928,8 @@ function showDetail(food){
 function closeDetail(){
   document.getElementById("detail-panel").style.display = "none";
   selectedFood = null;
+  if(selectedCountryLayer && countryLayer) countryLayer.resetStyle(selectedCountryLayer);
+  selectedCountryLayer = null;
   render();
 }
 
@@ -917,122 +959,129 @@ function blendFoodColors(foodList){
 }
 
 /* ── Country heatmap ── */
-const COUNTRY_NORM={
-  "United States":"United States of America",
-  "US":"United States of America",
-  "USA":"United States of America"
-};
-function normC(n){ return COUNTRY_NORM[n]||n; }
 let countryLayer=null, countryGeoData=null;
 
-function getFoodsForCountry(name){
-  const n=normC(name);
-  return foods.filter(f=>{
-    if(!activeGroups.has(f.group)) return false;
-    return currentView==="native"
-      ? f.nativeCountries.some(c=>normC(c)===n)
-      : normC(f.collectionCountry)===n;
+function getProductionForCountry(geoName){
+  const result = {};
+  Object.entries(PRODUCTION_DATA).forEach(([item, countries]) => {
+    if(!activeGroups.has(ITEM_TO_GROUP[item])) return;
+    if(countries[geoName]) result[item] = countries[geoName];
   });
+  return result;
+}
+
+function blendProductionColors(prod){
+  let r=0,g=0,b=0,total=0;
+  Object.entries(prod).forEach(([item,tonnes])=>{
+    const grp = ITEM_TO_GROUP[item];
+    const c = hexToRgb(GROUP_COLORS[grp]);
+    r+=c.r*tonnes; g+=c.g*tonnes; b+=c.b*tonnes; total+=tonnes;
+  });
+  if(total===0) return null;
+  return rgbToHex(Math.round(r/total),Math.round(g/total),Math.round(b/total));
+}
+
+function formatTonnes(t){
+  if(t>=1e6) return (t/1e6).toFixed(1)+'M tonnes';
+  if(t>=1e3) return (t/1e3).toFixed(1)+'K tonnes';
+  return Math.round(t)+' tonnes';
 }
 
 function countryStyle(feature){
-  const fl=getFoodsForCountry(feature.properties.name);
-  if(!fl.length) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
-  const bc=blendFoodColors(fl);
-  if(!bc) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
-  const op=Math.min(0.7, 0.2 + fl.length*0.1);
-  return {fillColor:bc, fillOpacity:op, color:bc, weight:1.5, opacity:Math.min(0.85,op+0.15)};
+  const prod = getProductionForCountry(feature.properties.name);
+  const total = Object.values(prod).reduce((s,v)=>s+v,0);
+  if(total===0) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
+  const color = blendProductionColors(prod);
+  if(!color) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
+  const t = Math.log10(1+total)/Math.log10(1+PROD_GLOBAL_MAX);
+  const op = 0.25 + 0.55*t;
+  return {fillColor:color, fillOpacity:op, color:color, weight:1, opacity:Math.min(0.9,op+0.15)};
 }
 
 function updateHeatmap(){
   if(countryLayer){ map.removeLayer(countryLayer); countryLayer=null; }
-  if(!showHeatmap || !countryGeoData) return;
+  const legend = document.getElementById("heat-legend");
+  if(!showHeatmap || !countryGeoData){
+    if(legend) legend.style.display="none";
+    return;
+  }
+  if(legend) legend.style.display = "block";
+
   countryLayer = L.geoJSON(countryGeoData, {
     style: countryStyle,
     onEachFeature: function(ft, layer){
-      const fl = getFoodsForCountry(ft.properties.name);
-      if(!fl.length) return;
-      layer.on("click", function(){
-        showCountryDetail(ft.properties.name, getFoodsForCountry(ft.properties.name));
+      const prod = getProductionForCountry(ft.properties.name);
+      const total = Object.values(prod).reduce((s,v)=>s+v,0);
+      if(!total) return;
+
+      layer.bindTooltip(
+        `<b>${ft.properties.name}</b><br>${formatTonnes(total)}`,
+        {sticky:true, className:"custom-tooltip", direction:"top"}
+      );
+
+      layer.on("click", function(e){
+        if(selectedCountryLayer && countryLayer) countryLayer.resetStyle(selectedCountryLayer);
+        selectedCountryLayer = e.target;
+        e.target.setStyle({ weight:2.5, color:'#2563eb', opacity:1 });
+        e.target.bringToFront();
+        showCountryDetail(ft.properties.name);
       });
       layer.on("mouseover", function(e){
-        const cur = getFoodsForCountry(ft.properties.name);
-        if(cur.length){
-          e.target.setStyle({
-            weight:2.5,
-            fillOpacity: Math.min(0.85, (countryStyle(ft).fillOpacity||0.3)+0.15)
-          });
+        if(e.target !== selectedCountryLayer){
+          e.target.setStyle({ weight:2.5, color:'#2563eb', opacity:1 });
+          e.target.bringToFront();
         }
       });
       layer.on("mouseout", function(e){
-        if(countryLayer) countryLayer.resetStyle(e.target);
+        if(e.target !== selectedCountryLayer && countryLayer) countryLayer.resetStyle(e.target);
       });
     }
   }).addTo(map);
 }
 
-function showCountryDetail(countryName, foodsHere){
+function showCountryDetail(countryName){
   selectedFood = null;
   const panel = document.getElementById("detail-panel");
-  document.getElementById("dp-name").textContent = countryName;
-  document.getElementById("dp-sci").textContent =
-    currentView==="native" ? "Native origin of these foods" : "Sample collection location";
+  const prod = getProductionForCountry(countryName);
+  const entries = Object.entries(prod).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((s,[,v])=>s+v,0);
 
-  const gs = [...new Set(foodsHere.map(f=>f.group))];
-  document.getElementById("dp-badge-wrap").innerHTML = gs.map(g=>{
+  document.getElementById("dp-name").textContent = countryName;
+  document.getElementById("dp-sci").textContent = "Production data (FAO)";
+
+  const groups = [...new Set(entries.map(([item])=>ITEM_TO_GROUP[item]))];
+  document.getElementById("dp-badge-wrap").innerHTML = groups.map(g=>{
     const c=GROUP_COLORS[g];
     return `<span class="dp-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${g}</span> `;
   }).join("");
 
   let html = `<div class="dp-section">
-    <div class="dp-section-title">${foodsHere.length} food${foodsHere.length>1?"s":""} in dataset</div>`;
-  foodsHere.forEach(f=>{
-    const c = GROUP_COLORS[f.group];
-    html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;
-      border-bottom:1px solid var(--row-border);cursor:pointer"
-      onclick="showDetail(foods.find(x=>x.id==='${f.id}'))">
-      <div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0"></div>
-      <div>
-        <div style="font-size:.8rem;font-weight:500">${f.name}</div>
-        <div style="font-size:.68rem;color:var(--text-muted);font-style:italic">${f.sci}</div>
+    <div class="dp-section-title">Total Production</div>
+    <div class="dp-row"><span class="dp-row-label">Combined</span><span class="dp-row-value">${formatTonnes(total)}</span></div>
+  </div>`;
+
+  html += `<div class="dp-section">
+    <div class="dp-section-title">${entries.length} food${entries.length>1?"s":""} produced</div>`;
+
+  entries.forEach(([item, tonnes])=>{
+    const c = GROUP_COLORS[ITEM_TO_GROUP[item]];
+    const pct = total>0 ? ((tonnes/total)*100).toFixed(1) : "0";
+    html += `<div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0"></div>
+        <span style="font-size:.8rem;font-weight:500;flex:1">${ITEM_DISPLAY[item]}</span>
+        <span style="font-size:.76rem;font-weight:600">${formatTonnes(tonnes)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;height:6px;background:var(--bar-bg);border-radius:3px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${c};border-radius:3px"></div>
+        </div>
+        <span style="font-size:.65rem;color:var(--text-muted);min-width:32px;text-align:right">${pct}%</span>
       </div>
     </div>`;
   });
+
   html += `</div>`;
-
-  if(foodsHere.length > 0){
-    const avg = {water:0,carb:0,protein:0,lipid:0,ash:0};
-    foodsHere.forEach(f=>{
-      avg.water+=f.n.water; avg.carb+=f.n.carb;
-      avg.protein+=f.n.protein; avg.lipid+=f.n.lipid; avg.ash+=f.n.ash;
-    });
-    const ct = foodsHere.length;
-    Object.keys(avg).forEach(k=>{ avg[k]/=ct; });
-    const tot = avg.water+avg.carb+avg.protein+avg.lipid+avg.ash;
-    const pct = k=>((avg[k]/tot)*100).toFixed(1);
-
-    html += `<div class="dp-section">
-      <div class="dp-section-title">Average Composition (g/100 g)</div>
-      <div class="macro-bar-container">
-        <div class="macro-bar">
-          <div class="macro-bar-seg" style="width:${pct("water")}%;background:${MACRO_COLORS.Water}"></div>
-          <div class="macro-bar-seg" style="width:${pct("carb")}%;background:${MACRO_COLORS.Carbohydrate}"></div>
-          <div class="macro-bar-seg" style="width:${pct("protein")}%;background:${MACRO_COLORS.Protein}"></div>
-          <div class="macro-bar-seg" style="width:${pct("lipid")}%;background:${MACRO_COLORS.Lipid}"></div>
-          <div class="macro-bar-seg" style="width:${pct("ash")}%;background:${MACRO_COLORS.Ash}"></div>
-        </div>
-        <div class="macro-legend">
-          ${Object.entries(MACRO_COLORS).map(([k,c])=>{
-            const key = k==="Carbohydrate" ? "carb" : k.toLowerCase();
-            return `<span class="macro-legend-item">
-              <span class="macro-legend-swatch" style="background:${c}"></span>
-              ${k} <span class="macro-legend-val">${avg[key].toFixed(1)}</span>
-            </span>`;
-          }).join("")}
-        </div>
-      </div>
-    </div>`;
-  }
 
   document.getElementById("dp-body").innerHTML = html;
   panel.style.display = "block";
@@ -1041,11 +1090,28 @@ function showCountryDetail(countryName, foodsHere){
 /* ── Master render ── */
 function render(){ updateHeatmap(); updateMarkers(); }
 
+/* ── Fix antimeridian crossing (Russia, Fiji, etc.) ── */
+function fixAntimeridian(geojson){
+  geojson.features.forEach(f=>{
+    const processRing = ring=>{
+      for(let i=1;i<ring.length;i++){
+        const dLng = ring[i][0]-ring[i-1][0];
+        if(dLng>180) ring[i][0]-=360;
+        else if(dLng<-180) ring[i][0]+=360;
+      }
+    };
+    const g=f.geometry;
+    if(g.type==='Polygon') g.coordinates.forEach(processRing);
+    else if(g.type==='MultiPolygon') g.coordinates.forEach(p=>p.forEach(processRing));
+  });
+  return geojson;
+}
+
 /* ── Load country boundaries ── */
 fetch("https://unpkg.com/world-atlas@2.0.2/countries-110m.json")
   .then(r=>r.json())
   .then(topo=>{
-    countryGeoData = topojson.feature(topo, topo.objects.countries);
+    countryGeoData = fixAntimeridian(topojson.feature(topo, topo.objects.countries));
     updateHeatmap();
   })
   .catch(e=>console.warn("Could not load country boundaries:", e));
