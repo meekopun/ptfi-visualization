@@ -5,22 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UMAP TSV Dashboard</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/smiles-drawer@2.2.1/dist/smiles-drawer.min.js"></script>
   <style>
     :root {
-    --bg: #f7f8fc;
-    --panel: #ffffff;
-    --panel-2: #f4f6fb;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --border: #d8dfec;
-    --accent: #2563eb;
-    --accent-2: #0f766e;
-    --danger: #dc2626;
-    --shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
-    --grid: rgba(31, 41, 55, 0.12);
+      --bg: #f7f8fc;
+      --panel: #ffffff;
+      --panel-2: #f4f6fb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d8dfec;
+      --accent: #2563eb;
+      --accent-2: #0f766e;
+      --danger: #dc2626;
+      --shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
+      --grid: rgba(31, 41, 55, 0.12);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -28,6 +31,7 @@
       background: linear-gradient(180deg, #f9fbff, #f3f6fc 45%, #eef3fb);
       color: var(--text);
     }
+    
 
     .wrap {
       max-width: 1600px;
@@ -58,7 +62,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 16px;
     }
 
@@ -140,10 +144,10 @@
     }
 
     button.primary {
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-        color: white;
-        border: none;
-        }
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+    }
 
     button:hover {
       filter: brightness(1.03);
@@ -206,7 +210,8 @@
       background: white;
     }
 
-    th, td {
+    th,
+    td {
       padding: 8px 10px;
       border-bottom: 1px solid rgba(31, 41, 55, 0.08);
       text-align: left;
@@ -244,15 +249,32 @@
       min-height: 1.2em;
     }
 
+    .filter-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fafcff;
+      overflow: hidden;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      background: #f4f7fc;
+    }
+
+    .filter-actions button {
+      padding: 6px 8px;
+      font-size: 0.8rem;
+    }
+
     .checkboxes {
       display: grid;
       gap: 8px;
       max-height: 180px;
       overflow: auto;
       padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: #fafcff;
     }
 
     .checkboxes label {
@@ -270,17 +292,93 @@
       font-size: 0.8rem;
       line-height: 1.45;
     }
+    .molecule-card {
+      margin-top: 14px;
+    }
+
+    .molecule-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .molecule-stage {
+      display: grid;
+      place-items: center;
+      min-height: 280px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    #molCanvas {
+      width: 320px;
+      height: 240px;
+      max-width: 100%;
+      display: block;
+    }
+
+    .molecule-meta {
+      display: grid;
+      gap: 12px;
+    }
+
+    .meta-block {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+    }
+
+    .meta-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .meta-value {
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    .smiles-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .structure-help {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .molecule-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
     @media (max-width: 1100px) {
       .grid {
         grid-template-columns: 1fr;
       }
+
       .controls {
         position: static;
       }
+
       .stats {
         grid-template-columns: repeat(2, minmax(120px, 1fr));
       }
+
       #plot {
         height: 60vh;
         min-height: 440px;
@@ -300,9 +398,13 @@
     <div class="titlebar">
       <div>
         <h1>UMAP Dashboard from TSV</h1>
-        <div class="subtitle">Load a TSV file or paste TSV text, then filter, recolor, resize, and inspect points.</div>
+        <div class="subtitle">
+          Load a TSV file or paste TSV text, then filter, recolor, resize, and inspect points.
+        </div>
       </div>
-      <div class="small">Expected fields: compound, structure, subcategory, status, food, concentration, UMAP1, UMAP2</div>
+      <div class="small">
+        Expected fields: compound, structure, subcategory, status, food, concentration, UMAP1, UMAP2
+      </div>
     </div>
 
     <div class="grid">
@@ -391,18 +493,36 @@
         </div>
 
         <div class="row">
-          <label for="foodFilter">Food</label>
-          <div id="foodFilter" class="checkboxes"></div>
+          <label>Food</label>
+          <div class="filter-box">
+            <div class="filter-actions">
+              <button type="button" data-target="foodFilter" data-action="all">Select all</button>
+              <button type="button" data-target="foodFilter" data-action="none">Clear</button>
+            </div>
+            <div id="foodFilter" class="checkboxes"></div>
+          </div>
         </div>
 
         <div class="row">
-          <label for="subcategoryFilter">Subcategory</label>
-          <div id="subcategoryFilter" class="checkboxes"></div>
+          <label>Subcategory</label>
+          <div class="filter-box">
+            <div class="filter-actions">
+              <button type="button" data-target="subcategoryFilter" data-action="all">Select all</button>
+              <button type="button" data-target="subcategoryFilter" data-action="none">Clear</button>
+            </div>
+            <div id="subcategoryFilter" class="checkboxes"></div>
+          </div>
         </div>
 
         <div class="row">
-          <label for="statusFilter">Status</label>
-          <div id="statusFilter" class="checkboxes"></div>
+          <label>Status</label>
+          <div class="filter-box">
+            <div class="filter-actions">
+              <button type="button" data-target="statusFilter" data-action="all">Select all</button>
+              <button type="button" data-target="statusFilter" data-action="none">Clear</button>
+            </div>
+            <div id="statusFilter" class="checkboxes"></div>
+          </div>
         </div>
 
         <div class="two-col">
@@ -439,7 +559,39 @@
           <div id="plot"></div>
         </div>
 
-        <div class="panel">
+        <div class="panel molecule-card">
+          <div class="section-title">Structure preview</div>
+          <div class="molecule-grid">
+            <div class="molecule-stage">
+              <canvas id="molCanvas" width="320" height="240"></canvas>
+            </div>
+        
+            <div class="molecule-meta">
+              <div class="meta-block">
+                <div class="meta-label">Compound</div>
+                <div class="meta-value" id="selectedCompound">None selected</div>
+              </div>
+        
+              <div class="meta-block">
+                <div class="meta-label">SMILES</div>
+                <div class="smiles-box" id="selectedSmiles">
+                  Hover over or click a point to preview its structure.
+                </div>
+              </div>
+        
+              <div class="meta-block">
+                <div class="meta-label">Preview status</div>
+                <div id="structureStatus">Waiting for a point selection.</div>
+              </div>
+        
+              <div class="structure-help">
+                Hover updates the preview. Click pins the current molecule.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 14px;">
           <div class="section-title">Filtered rows preview</div>
           <div id="activeFilters" class="small" style="margin-bottom: 10px;"></div>
           <div class="table-wrap">
@@ -447,6 +599,7 @@
               <thead>
                 <tr>
                   <th>compound</th>
+                  <th>structure</th>
                   <th>food</th>
                   <th>subcategory</th>
                   <th>status</th>
@@ -458,7 +611,9 @@
               <tbody id="tableBody"></tbody>
             </table>
           </div>
-          <div class="legend-note">Hover points for full details including structure.</div>
+          <div class="legend-note">
+            Hover points for full details including structure.
+          </div>
         </div>
       </div>
     </div>
@@ -480,57 +635,38 @@
     const DEFAULT_SYMBOL_BY = "food";
     const DEFAULT_SIZE_BY = "concentration";
 
-
-  const FOOD_COLORS = {
-    "chickpea": "#d8c08f",
-    "sweet potato": "#e98b2a",
-    "brown lentil (cooked)": "#8b5e3c",
-    "pinto bean (cooked)": "#b07a59",
-    "steel cut oats": "#c9b27c",
-    "edamame pod (raw)": "#b9dd7a",
-    "pumpkin (canned)": "#f28c28",
-    "paneer": "#f3e5ab",
-    "cheddar cheese (sharp)": "#f4b000",
-    "artichoke": "#7ea16b",
-    "extra firm tofu (raw)": "#efe8cf",
-    "black olive (canned)": "#3d3d3d",
-    "sardine (canned)": "#7f8fa6",
-    "bison meat (cooked)": "#8c4f3f",
-    "freekeh (cooked)": "#8a9b4f",
-    "quinoa seed (dried, cooked)": "#d8c7a1",
-    "blackeyed pea": "#d9c6a5",
-    "chicken breast (cooked)": "#d8b58a",
-    "whole grain bulgur wheat": "#c7a96b",
-    "emu flat fillet (raw)": "#a85d5d",
-    "huckleberry": "#4f5fbf",
-    "sour cherry": "#c81d25",
-    "sea lettuce": "#67c587",
-    "red dragon fruit (raw)": "#d7266d",
-    "oat milk": "#efe6d6",
-    "peach and blueberry crisp": "#c97bb1",
-    "kale lacinato leaf (raw)": "#2f6f3e",
-    "white rice (cooked)": "#f3f0e8",
-    "dark chocolate": "#4a2c24",
-    "hazelnut spread with cocoa": "#7a4b2e"
-  };
-
-  function normalizeFoodName(food) {
-    return String(food || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
-  }
-
-  function getFoodColor(food) {
-    const normalized = normalizeFoodName(food);
-    if (!normalized || normalized === "(blank)") return "#94a3b8";
-
-    if (FOOD_COLORS[normalized]) {
-      return FOOD_COLORS[normalized];
-    }
-
-    return stringToPastelColor(normalized);
-  }
+    const FOOD_COLORS = {
+      "chickpea": "#d8c08f",
+      "sweet potato": "#e98b2a",
+      "brown lentil (cooked)": "#8b5e3c",
+      "pinto bean (cooked)": "#b07a59",
+      "steel cut oats": "#c9b27c",
+      "edamame pod (raw)": "#b9dd7a",
+      "pumpkin (canned)": "#f28c28",
+      "paneer": "#f3e5ab",
+      "cheddar cheese (sharp)": "#f4b000",
+      "artichoke": "#7ea16b",
+      "extra firm tofu (raw)": "#efe8cf",
+      "black olive (canned)": "#3d3d3d",
+      "sardine (canned)": "#7f8fa6",
+      "bison meat (cooked)": "#8c4f3f",
+      "freekeh (cooked)": "#8a9b4f",
+      "quinoa seed (dried, cooked)": "#d8c7a1",
+      "blackeyed pea": "#d9c6a5",
+      "chicken breast (cooked)": "#d8b58a",
+      "whole grain bulgur wheat": "#c7a96b",
+      "emu flat fillet (raw)": "#a85d5d",
+      "huckleberry": "#4f5fbf",
+      "sour cherry": "#c81d25",
+      "sea lettuce": "#67c587",
+      "red dragon fruit (raw)": "#d7266d",
+      "oat milk": "#efe6d6",
+      "peach and blueberry crisp": "#c97bb1",
+      "kale lacinato leaf (raw)": "#2f6f3e",
+      "white rice (cooked)": "#f3f0e8",
+      "dark chocolate": "#4a2c24",
+      "hazelnut spread with cocoa": "#7a4b2e"
+    };
 
     let rawData = [];
     let filteredData = [];
@@ -559,22 +695,120 @@
     const tableBody = document.getElementById("tableBody");
     const activeFilters = document.getElementById("activeFilters");
 
+    const selectedCompoundEl = document.getElementById("selectedCompound");
+    const selectedSmilesEl = document.getElementById("selectedSmiles");
+    const structureStatusEl = document.getElementById("structureStatus");
+    const molCanvas = document.getElementById("molCanvas");
+
+    let pinnedStructureRow = null;
+
+    const moleculeDrawer = (typeof SmilesDrawer !== "undefined")
+      ? new SmilesDrawer.Drawer({
+          width: 320,
+          height: 240,
+          padding: 18,
+          compactDrawing: true,
+          terminalCarbons: false,
+          explicitHydrogens: false
+        })
+      : null;
+
     function setWarning(msg = "") {
       warningEl.textContent = msg;
     }
+    function clearMolCanvas() {
+      const ctx = molCanvas.getContext("2d");
+      ctx.clearRect(0, 0, molCanvas.width, molCanvas.height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, molCanvas.width, molCanvas.height);
+    }
+
+    function setStructurePanel(row, statusText = "") {
+      if (!row) {
+        selectedCompoundEl.textContent = "None selected";
+        selectedSmilesEl.textContent = "Hover over or click a point to preview its structure.";
+        structureStatusEl.textContent = statusText || "Waiting for a point selection.";
+        clearMolCanvas();
+        return;
+      }
+
+      const smiles = row.structure || "";
+      selectedCompoundEl.textContent = row.compound || "(unnamed compound)";
+      selectedSmilesEl.textContent = smiles || "(no SMILES)";
+      structureStatusEl.textContent = statusText || "Structure rendered.";
+
+      clearMolCanvas();
+
+      if (!smiles) {
+        structureStatusEl.textContent = "No SMILES string available for this row.";
+        return;
+      }
+
+      if (!moleculeDrawer || typeof SmilesDrawer === "undefined") {
+        structureStatusEl.textContent = "SmilesDrawer failed to load.";
+        return;
+      }
+
+      SmilesDrawer.parse(
+        smiles,
+        function (tree) {
+          clearMolCanvas();
+          moleculeDrawer.draw(tree, "molCanvas", "light", false);
+          structureStatusEl.textContent = statusText || "Structure rendered.";
+        },
+        function (err) {
+          clearMolCanvas();
+          structureStatusEl.textContent = `Could not parse SMILES: ${err}`;
+        }
+      );
+    }
+
+    function pointToRow(pt) {
+      return {
+        compound: pt.customdata?.[0] ?? "",
+        structure: pt.customdata?.[1] ?? "",
+        subcategory: pt.customdata?.[2] ?? "",
+        status: pt.customdata?.[3] ?? "",
+        food: pt.customdata?.[4] ?? "",
+        concentration: pt.customdata?.[5] ?? "",
+        UMAP1: pt.customdata?.[6] ?? "",
+        UMAP2: pt.customdata?.[7] ?? ""
+      };
+    }
+
+    function splitTSVLine(line) {
+      return String(line).split("\t");
+    }
+
+    function toNumber(v) {
+      if (v === null || v === undefined) return NaN;
+      const s = String(v).trim();
+      if (!s) return NaN;
+      const n = Number(s.replace(/,/g, ""));
+      return Number.isFinite(n) ? n : NaN;
+    }
 
     function parseTSV(text) {
-      const cleaned = text.replace(/\r/g, "").trim();
-      if (!cleaned) return [];
+      const cleaned = String(text || "").replace(/\r/g, "").trim();
+      if (!cleaned) {
+        return { headers: [], rows: [] };
+      }
 
-      const lines = cleaned.split("\n").filter(Boolean);
+      const lines = cleaned.split("\n").filter(line => line.trim() !== "");
+      if (!lines.length) {
+        return { headers: [], rows: [] };
+      }
+
       const headers = splitTSVLine(lines[0]).map(h => h.trim());
-
       const rows = [];
+
       for (let i = 1; i < lines.length; i++) {
         const cells = splitTSVLine(lines[i]);
 
-        while (cells.length < headers.length) cells.push("");
+        while (cells.length < headers.length) {
+          cells.push("");
+        }
+
         if (cells.length > headers.length) {
           const extra = cells.slice(headers.length - 1).join("\t");
           cells.splice(headers.length - 1, cells.length - headers.length + 1, extra);
@@ -590,29 +824,32 @@
         row.__umap1_num = toNumber(row.UMAP1);
         row.__umap2_num = toNumber(row.UMAP2);
         row.__has_umap = Number.isFinite(row.__umap1_num) && Number.isFinite(row.__umap2_num);
-
         rows.push(row);
       }
 
       return { headers, rows };
     }
 
-    function splitTSVLine(line) {
-      return line.split("\t");
-    }
-
-    function toNumber(v) {
-      if (v === null || v === undefined) return NaN;
-      const s = String(v).trim();
-      if (!s) return NaN;
-      const n = Number(s.replace(/,/g, ""));
-      return Number.isFinite(n) ? n : NaN;
-    }
-
     function uniqueValues(data, key) {
-      return [...new Set(data.map(d => (d[key] ?? "").trim()).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b, undefined, { sensitivity: "base" })
-      );
+      return [...new Set(
+        data.map(d => String(d[key] ?? "").trim()).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    }
+
+    function slug(s) {
+      return String(s)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_|_$/g, "");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function buildCheckboxes(container, values, name) {
@@ -620,7 +857,10 @@
       values.forEach(value => {
         const id = `${name}_${slug(value)}`;
         const label = document.createElement("label");
-        label.innerHTML = `<input type="checkbox" value="${escapeHtml(value)}" checked id="${id}"> <span>${escapeHtml(value)}</span>`;
+        label.innerHTML = `
+          <input type="checkbox" value="${escapeHtml(value)}" checked id="${id}">
+          <span>${escapeHtml(value)}</span>
+        `;
         container.appendChild(label);
       });
     }
@@ -629,8 +869,15 @@
       return [...container.querySelectorAll('input[type="checkbox"]:checked')].map(el => el.value);
     }
 
+    function setAllCheckboxes(container, checked) {
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = checked;
+      });
+    }
+
     function populateSelect(selectEl, columns, preferred, allowNone = true) {
       selectEl.innerHTML = "";
+
       if (allowNone) {
         const opt = document.createElement("option");
         opt.value = "";
@@ -647,14 +894,123 @@
 
       if (columns.includes(preferred)) {
         selectEl.value = preferred;
+      } else if (allowNone) {
+        selectEl.value = "";
       }
+    }
+
+    function normalizeFoodName(food) {
+      return String(food || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+    }
+
+    function stringToPastelColor(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const hue = Math.abs(hash) % 360;
+      return `hsl(${hue}, 58%, 68%)`;
+    }
+
+    function getFoodColor(food) {
+      const normalized = normalizeFoodName(food);
+      if (!normalized || normalized === "(blank)") return "#94a3b8";
+      if (FOOD_COLORS[normalized]) return FOOD_COLORS[normalized];
+
+      for (const [keyword, color] of Object.entries(FOOD_COLORS)) {
+        if (normalized.includes(keyword)) return color;
+      }
+
+      return stringToPastelColor(normalized);
+    }
+
+    function getValue(row, key) {
+      if (!key) return "__single__";
+      return row[key] ?? "";
+    }
+
+    function groupBy(data, key) {
+      const grouped = {};
+      if (!key) {
+        grouped.__single__ = data;
+        return grouped;
+      }
+
+      for (const row of data) {
+        const value = getValue(row, key) || "(blank)";
+        if (!grouped[value]) grouped[value] = [];
+        grouped[value].push(row);
+      }
+
+      return grouped;
+    }
+
+    function computeSizes(rows, sizeBy, baseSize, sizeScale) {
+      if (!sizeBy) return rows.map(() => baseSize);
+
+      const numeric = rows
+        .map(r => toNumber(r[sizeBy]))
+        .filter(Number.isFinite);
+
+      if (!numeric.length) return rows.map(() => baseSize);
+
+      const min = Math.min(...numeric);
+      const max = Math.max(...numeric);
+      const span = max - min || 1;
+
+      return rows.map(r => {
+        const v = toNumber(r[sizeBy]);
+        if (!Number.isFinite(v)) return baseSize;
+        return baseSize + ((v - min) / span) * sizeScale;
+      });
+    }
+
+    function makeSymbolMap(data, key) {
+      const fallback = { "__single__": "circle" };
+      if (!key) return fallback;
+
+      const values = uniqueValues(data, key);
+      const symbols = [
+        "circle",
+        "square",
+        "diamond",
+        "cross",
+        "x",
+        "triangle-up",
+        "triangle-down",
+        "triangle-left",
+        "triangle-right",
+        "pentagon",
+        "hexagon",
+        "star",
+        "hourglass",
+        "bowtie"
+      ];
+
+      const map = {};
+      values.forEach((v, i) => {
+        map[v] = symbols[i % symbols.length];
+      });
+      map[""] = "circle";
+      map["(blank)"] = "circle";
+      return map;
+    }
+
+    function getTraceColor(groupName, colorBy) {
+      if (colorBy === "food") {
+        return getFoodColor(groupName);
+      }
+      return undefined;
     }
 
     function loadDataFromText(text) {
       setWarning("");
-
       const parsed = parseTSV(text);
-      if (!parsed.rows?.length) {
+
+      if (!parsed.rows.length) {
         rawData = [];
         filteredData = [];
         allColumns = [];
@@ -692,7 +1048,7 @@
       maxConcEl.value = "";
 
       [foodFilterEl, subcategoryFilterEl, statusFilterEl].forEach(container => {
-        container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+        setAllCheckboxes(container, true);
       });
 
       if (allColumns.includes(DEFAULT_COLOR_BY)) colorByEl.value = DEFAULT_COLOR_BY;
@@ -717,7 +1073,6 @@
         if (foods.size && !foods.has(row.food || "")) return false;
         if (subcats.size && !subcats.has(row.subcategory || "")) return false;
         if (statuses.size && !statuses.has(row.status || "")) return false;
-
         if (Number.isFinite(minConc) && !(row.__conc_num >= minConc)) return false;
         if (Number.isFinite(maxConc) && !(row.__conc_num <= maxConc)) return false;
 
@@ -732,6 +1087,7 @@
             row.UMAP1,
             row.UMAP2
           ].join(" ").toLowerCase();
+
           if (!hay.includes(searchText)) return false;
         }
 
@@ -741,16 +1097,8 @@
       renderAll();
     }
 
-    function renderAll() {
-      renderStats();
-      renderFiltersSummary();
-      renderPlot();
-      renderTable();
-    }
-
     function renderStats() {
       const plottable = filteredData.filter(d => d.__has_umap);
-
       document.getElementById("statRows").textContent = filteredData.length.toLocaleString();
       document.getElementById("statPlottable").textContent = plottable.length.toLocaleString();
       document.getElementById("statFoods").textContent = uniqueValues(filteredData, "food").length.toLocaleString();
@@ -759,7 +1107,6 @@
 
     function renderFiltersSummary() {
       const bits = [];
-
       const searchText = searchTextEl.value.trim();
       const minConc = minConcEl.value.trim();
       const maxConc = maxConcEl.value.trim();
@@ -776,9 +1123,15 @@
       const subcatAll = uniqueValues(rawData, "subcategory");
       const statusAll = uniqueValues(rawData, "status");
 
-      if (foodChecked.length !== foodAll.length) bits.push(`<span class="pill">foods: ${foodChecked.length}/${foodAll.length}</span>`);
-      if (subcatChecked.length !== subcatAll.length) bits.push(`<span class="pill">subcategories: ${subcatChecked.length}/${subcatAll.length}</span>`);
-      if (statusChecked.length !== statusAll.length) bits.push(`<span class="pill">status: ${statusChecked.length}/${statusAll.length}</span>`);
+      if (foodChecked.length !== foodAll.length) {
+        bits.push(`<span class="pill">foods: ${foodChecked.length}/${foodAll.length}</span>`);
+      }
+      if (subcatChecked.length !== subcatAll.length) {
+        bits.push(`<span class="pill">subcategories: ${subcatChecked.length}/${subcatAll.length}</span>`);
+      }
+      if (statusChecked.length !== statusAll.length) {
+        bits.push(`<span class="pill">status: ${statusChecked.length}/${statusAll.length}</span>`);
+      }
 
       activeFilters.innerHTML = bits.length ? bits.join("") : "No active filters.";
     }
@@ -794,22 +1147,29 @@
       const showLabels = showLabelsEl.checked;
 
       if (!plottable.length) {
-        Plotly.newPlot("plot", [], {
-          paper_bgcolor: "white",
-          plot_bgcolor: "white",
-          font: { color: "#1f2937" },
-          xaxis: { title: "UMAP1", gridcolor: "rgba(31,41,55,0.12)" },
-          yaxis: { title: "UMAP2", gridcolor: "rgba(31,41,55,0.12)" },
-          annotations: [{
-            text: "No plottable rows after filtering",
-            xref: "paper",
-            yref: "paper",
-            x: 0.5,
-            y: 0.5,
-            showarrow: false,
-            font: { size: 18, color: "#6b7280" }
-          }]
-        }, { responsive: true });
+        Plotly.newPlot(
+          "plot",
+          [],
+          {
+            paper_bgcolor: "white",
+            plot_bgcolor: "white",
+            font: { color: "#1f2937" },
+            xaxis: { title: "UMAP1", gridcolor: "rgba(31,41,55,0.12)" },
+            yaxis: { title: "UMAP2", gridcolor: "rgba(31,41,55,0.12)" },
+            annotations: [{
+              text: "No plottable rows after filtering",
+              xref: "paper",
+              yref: "paper",
+              x: 0.5,
+              y: 0.5,
+              showarrow: false,
+              font: { size: 18, color: "#6b7280" }
+            }]
+          },
+          { responsive: true, displaylogo: false }
+        );
+
+        setStructurePanel(null, "No plottable rows available.");
         return;
       }
 
@@ -822,7 +1182,7 @@
         const traceColor = getTraceColor(groupName, colorBy);
 
         traces.push({
-          type: "scattergl",
+          type: "scatter",
           mode: showLabels ? "markers+text" : "markers",
           name: groupName === "__single__" ? "data" : String(groupName),
           x: rows.map(r => r.__umap1_num),
@@ -835,10 +1195,7 @@
             opacity,
             color: traceColor,
             symbol: rows.map(r => symbolMap[getValue(r, symbolBy)] || "circle"),
-            line: {
-              width: 0.7,
-              color: "rgba(31,41,55,0.28)"
-            }
+            line: { width: 0.7, color: "rgba(31,41,55,0.28)" }
           },
           customdata: rows.map(r => [
             r.compound ?? "",
@@ -858,7 +1215,7 @@
             "concentration: %{customdata[5]}<br>" +
             "UMAP1: %{customdata[6]}<br>" +
             "UMAP2: %{customdata[7]}<br>" +
-            "structure: %{customdata[1]}<extra></extra>"
+            "SMILES: %{customdata[1]}<extra></extra>"
         });
       }
 
@@ -866,7 +1223,7 @@
         paper_bgcolor: "white",
         plot_bgcolor: "white",
         font: { color: "#1f2937" },
-        margin: { l: 60, r: 20, t: 50, b: 60 },
+        margin: { l: 60, r: 20, t: 60, b: 60 },
         legend: {
           orientation: "h",
           yanchor: "bottom",
@@ -887,7 +1244,7 @@
           gridcolor: "rgba(31,41,55,0.12)"
         },
         title: {
-          text: ``,
+          text: `UMAP scatter (${plottable.length.toLocaleString()} plotted points)`,
           x: 0.02
         }
       };
@@ -896,6 +1253,36 @@
         responsive: true,
         displaylogo: false,
         modeBarButtonsToRemove: ["lasso2d"]
+      }).then(() => {
+        const plotEl = document.getElementById("plot");
+
+        if (typeof plotEl.removeAllListeners === "function") {
+          plotEl.removeAllListeners("plotly_hover");
+          plotEl.removeAllListeners("plotly_unhover");
+          plotEl.removeAllListeners("plotly_click");
+        }
+
+        plotEl.on("plotly_hover", function (eventData) {
+          const pt = eventData?.points?.[0];
+          if (!pt) return;
+          const row = pointToRow(pt);
+          setStructurePanel(row, "Hover preview.");
+        });
+
+        plotEl.on("plotly_unhover", function () {
+          if (pinnedStructureRow) {
+            setStructurePanel(pinnedStructureRow, "Pinned preview.");
+          } else {
+            setStructurePanel(null, "Waiting for a point selection.");
+          }
+        });
+
+        plotEl.on("plotly_click", function (eventData) {
+          const pt = eventData?.points?.[0];
+          if (!pt) return;
+          pinnedStructureRow = pointToRow(pt);
+          setStructurePanel(pinnedStructureRow, "Pinned by click.");
+        });
       });
     }
 
@@ -907,6 +1294,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${escapeHtml(row.compound ?? "")}</td>
+          <td style="max-width:420px; word-break:break-all; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.8rem;">${escapeHtml(row.structure ?? "")}</td>
           <td>${escapeHtml(row.food ?? "")}</td>
           <td>${escapeHtml(row.subcategory ?? "")}</td>
           <td>${escapeHtml(row.status ?? "")}</td>
@@ -918,102 +1306,19 @@
       }
     }
 
-    function groupBy(data, key) {
-      const grouped = {};
-      if (!key) {
-        grouped.__single__ = data;
-        return grouped;
-      }
+    function renderAll() {
+      renderStats();
+      renderFiltersSummary();
+      renderPlot();
+      renderTable();
 
-      for (const row of data) {
-        const value = getValue(row, key) || "(blank)";
-        if (!grouped[value]) grouped[value] = [];
-        grouped[value].push(row);
-      }
-
-      return grouped;
-    }
-
-    function getValue(row, key) {
-      if (!key) return "__single__";
-      return row[key] ?? "";
-    }
-
-    function computeSizes(rows, sizeBy, baseSize, sizeScale) {
-      if (!sizeBy) return rows.map(() => baseSize);
-
-      const numeric = rows.map(r => toNumber(r[sizeBy])).filter(Number.isFinite);
-      if (!numeric.length) return rows.map(() => baseSize);
-
-      const min = Math.min(...numeric);
-      const max = Math.max(...numeric);
-      const span = max - min || 1;
-
-      return rows.map(r => {
-        const v = toNumber(r[sizeBy]);
-        if (!Number.isFinite(v)) return baseSize;
-        return baseSize + ((v - min) / span) * sizeScale;
-      });
-    }
-
-    function makeSymbolMap(data, key) {
-      const fallback = { "__single__": "circle" };
-      if (!key) return fallback;
-
-      const values = uniqueValues(data, key);
-      const symbols = [
-        "circle", "square", "diamond", "cross", "x",
-        "triangle-up", "triangle-down", "triangle-left", "triangle-right",
-        "pentagon", "hexagon", "hexagon2", "star", "hourglass", "bowtie"
-      ];
-
-      const map = {};
-      values.forEach((v, i) => {
-        map[v] = symbols[i % symbols.length];
-      });
-      map[""] = "circle";
-      map["(blank)"] = "circle";
-      return map;
-    }
-
-    function getTraceColor(groupName, colorBy) {
-      if (colorBy === "food") {
-        return getFoodColor(groupName);
-      }
-      return undefined;
-    }
-
-    function getFoodColor(food) {
-      const s = String(food || "").trim().toLowerCase();
-      if (!s || s === "(blank)") return "#94a3b8";
-
-      for (const [keyword, color] of Object.entries(FOOD_COLORS)) {
-        if (s.includes(keyword)) return color;
-      }
-
-      return stringToPastelColor(s);
-    }
-
-    function stringToPastelColor(str) {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      const hue = Math.abs(hash) % 360;
-      return `hsl(${hue}, 58%, 68%)`;
-    }
-
-    function slug(s) {
-      return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+      pinnedStructureRow = filteredData[0] || null;
+      setStructurePanel(
+        pinnedStructureRow,
+        pinnedStructureRow
+          ? "Showing the first filtered row by default."
+          : "No filtered rows available."
+      );
     }
 
     async function readUploadedFile(file) {
@@ -1040,6 +1345,17 @@
       }
     });
 
+    fileInput.addEventListener("change", async () => {
+      if (!fileInput.files || !fileInput.files[0]) return;
+      try {
+        const text = await readUploadedFile(fileInput.files[0]);
+        loadDataFromText(text);
+      } catch (err) {
+        console.error(err);
+        setWarning("Failed to read uploaded file.");
+      }
+    });
+
     applyBtn.addEventListener("click", applyFilters);
 
     resetBtn.addEventListener("click", () => {
@@ -1060,9 +1376,18 @@
       });
     });
 
+    document.querySelectorAll(".filter-actions button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.dataset.target;
+        const action = btn.dataset.action;
+        const container = document.getElementById(targetId);
+        if (!container) return;
+        setAllCheckboxes(container, action === "all");
+      });
+    });
+
     exampleBtn.addEventListener("click", () => {
-      tsvInput.value =
-`compound	structure	subcategory	status	food	concentration	UMAP1	UMAP2
+      tsvInput.value = `compound	structure	subcategory	status	food	concentration	UMAP1	UMAP2
 aiFA15:0	CCCCCCCCCCCC(C)CC(=O)O	Branched	analyte	chickpea	0	20.319675	-6.318915
 aiFA17:0	CCCCCCCCCCCCCC(C)CC(=O)O	Branched	analyte	chickpea	0	20.081244	-6.128203
 aiFA19:0	CCCCCCCCCCCCCCCC(C)CC(=O)O	Branched	analyte	chickpea	0	20.030453	-6.3140564
@@ -4003,31 +4328,10 @@ Threonine	CC(O)C(C(=O)O)N	Protein	analyte	hazelnut spread with cocoa	0	5.7458925
 Tryptophan	C1=CC=C2C(=C1)C=CN2CC(C(=O)O)N	Protein	analyte	hazelnut spread with cocoa	0	5.770929	17.783937
 Tyrosine	C1=CC(=CC=C1CC(C(=O)O)N)O	Protein	analyte	hazelnut spread with cocoa	0	5.5100207	17.697985
 Valine	CC(C)[C@@H](C(=O)O)N	Protein	analyte	hazelnut spread with cocoa	0	5.729938	19.046904`;
-      setWarning("Example TSV loaded into the text box. Click “Load data”.");
+      loadDataFromText(tsvInput.value);
     });
 
-    window.addEventListener("resize", () => {
-      if (document.getElementById("plot").data) {
-        Plotly.Plots.resize("plot");
-      }
-    });
-
-    Plotly.newPlot("plot", [], {
-      paper_bgcolor: "white",
-      plot_bgcolor: "white",
-      font: { color: "#1f2937" },
-      xaxis: { title: "UMAP1", gridcolor: "rgba(31,41,55,0.12)" },
-      yaxis: { title: "UMAP2", gridcolor: "rgba(31,41,55,0.12)" },
-      annotations: [{
-        text: "Load a TSV file or paste TSV text",
-        xref: "paper",
-        yref: "paper",
-        x: 0.5,
-        y: 0.5,
-        showarrow: false,
-        font: { size: 18, color: "#6b7280" }
-      }]
-    }, { responsive: true, displaylogo: false });
+    renderAll();
   </script>
 </body>
 </html>
