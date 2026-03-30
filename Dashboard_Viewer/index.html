@@ -205,8 +205,17 @@
         overflow: hidden;
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
-        height: 150px;
+        height: 138px;
       }
+
+      .map-picture {
+        margin-top: 18px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        height: 90px;
+        }
 
       .hero-note {
         margin-top: 18px;
@@ -249,7 +258,7 @@
         overflow: hidden;
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
-        height: 100px;
+        height: 98px;
       }
 
       .fat-picture {
@@ -258,7 +267,7 @@
         overflow: hidden;
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
-        height: 128px;
+        height: 225px;
       }
 
       .integrated-picture {
@@ -854,6 +863,7 @@
         <div class="brand">The Chickpea Atlas</div>
         <div class="nav-links">
           <a href="#overview">Overview</a>
+          <a href="#map">Map</a>
           <a href="#protein">Protein</a>
           <a href="#carbs">Carbohydrates</a>
           <a href="#fat">Fat</a>
@@ -1024,6 +1034,93 @@
                 The heatmap presents the broader nutrient pattern of chickpea as a single
                 visual fingerprint, showing which parts of the profile are relatively
                 stronger or weaker across the measured variables.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <main class="container">
+      <section id="map">
+        <div class="section-head">
+          <div class="section-kicker">Map</div>
+          <h2>Geographic Distribution</h2>
+        </div>
+        <div>
+          <figure class="figure-card featured" style="width: 102.5%;">
+            <div class="plot-frame wide" data-src="plots/chickpea-yield.svg">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea-yield.svg"
+                alt="Yield map for chickpeas in 2024"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea-yield.svg</strong> in the same folder as this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 4. Yield map</strong>
+              <p>
+                This figure shows the global distribution of chickpea production, highlighting
+                the major producing regions and the overall geographic pattern of cultivation. 
+                China, Sudan, Egypt, Bosnia and Herzegovina, Moldova, Jordan, and Israel all 
+                produce over 2.5 tonnes per hectar of chickpeas in 2024. Jordan produced the 
+                most per hectare with 11.89 tonnes per hectare.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+        <div class="feature reverse">
+          <div class="feature-text" style="width:550px;">
+            <h3>Geographic Distribution Profile Interpretation</h3>
+            <p>
+              Both the map and the line graph show that chickpea production is globally distributed 
+              rather than being concentrated in a single region. Although, there are certain countries and regions 
+              with much higher production of chickpeas. 
+            </p>
+            <p>
+              The overall pattern is one of broad cultivation across multiple continents and climates. This suggests 
+              that chickpea is a versatile crop that can be grown in a variety of conditions, contributing to its 
+              status as a staple legume in many parts of the world.
+            </p>
+            <div class="mini-note">
+              <strong>Key point:</strong> Chickpeas are cultivated in a wide range of geographic regions.
+            </div>
+            <div class="map-picture" data-src="plots/roasted-chickpea.jpg">
+              <img
+                src="plots/roasted-chickpea2.jpg"
+                alt="Roasted chickpea"
+                loading="lazy"
+                style = "object-fit: cover; object-position: 50% -100px;"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+            </div>
+          </div>
+
+          <figure class="figure-card" style="width:750px; height: auto; ">
+            <div class="plot-frame wide" data-src="plots/chickpea-yield.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea-yield.png"
+                alt="chickpea yield for the top four producing countries"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea-yield.png</strong> in the same folder as this
+                HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 5. Yield line graph</strong>
+              <p>
+                This figure shows the top four chickpea-producing countries since 1961, Italy, Peru, United States, 
+                and India, and their production trends from 1961 to 2024, highlighting the growth patterns and relative 
+                contributions of each country to global production of chickpeas.
               </p>
             </figcaption>
           </figure>
@@ -1228,7 +1325,7 @@
           </div>
         </div>
 
-        <div class="two-up">
+        <!-- <div class="two-up">
           <figure class="figure-card" style = "width: 770px">
             <div class="plot-frame standard" data-src="plots/carb_circular_lollipop.png">
               <span class="zoom-chip">Click to enlarge</span>
@@ -1252,7 +1349,7 @@
               </p>
             </figcaption>
           </figure>
-        </div>
+        </div> -->
       </section>
 
       <section id="fat">
@@ -1289,45 +1386,13 @@
                 src="plots/roasted-chickpea2.jpg"
                 alt="Chickpea picture"
                 loading="lazy"
-                style = "object-fit: cover; object-position: 50% -100px;"
+                style = "object-fit: cover; object-position: 50% -50px;"
                 onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
               />
-              <div class="missing">
-                Image not found.<br />
-                Place <strong>roasted-chickpea2.jpg</strong> in the same folder as
-                this HTML file.
-              </div>
             </div>
           </div>
 
-          <figure class="figure-card featured">
-            <div class="plot-frame wide" data-src="plots/lipid_class_summary.png">
-              <span class="zoom-chip">Click to enlarge</span>
-              <img
-                src="plots/lipid_class_summary.png"
-                alt="Lipid class summary for chickpeas"
-                loading="lazy"
-                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
-              />
-              <div class="missing">
-                Image not found.<br />
-                Place <strong>lipid_class_summary.png</strong> in the same folder as this
-                HTML file.
-              </div>
-            </div>
-            <figcaption>
-              <strong>Figure 9. Lipid class summary</strong>
-              <p>
-                This figure shows how the lipid signal is distributed across the measured
-                fatty-acid classes and serves as the main reference plot for interpreting
-                chickpea fat composition.
-              </p>
-            </figcaption>
-          </figure>
-        </div>
-
-        <div class="two-up">
-          <figure class="figure-card" style = "width: 525px;">
+          <figure class="figure-card">
             <div class="plot-frame standard" data-src="plots/fat_rose_chart.png">
               <span class="zoom-chip">Click to enlarge</span>
               <img
@@ -1343,14 +1408,13 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 10. Fat rose chart</strong>
+              <strong>Figure 8. Fat rose chart</strong>
               <p>
                 The rose chart turns the lipid pattern into a radial form that emphasizes
                 relative prominence across the fat classes.
               </p>
             </figcaption>
           </figure>
-
         </div>
       </section>
 
@@ -1383,7 +1447,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 11. Mineral profile</strong>
+              <strong>Figure 9. Mineral profile</strong>
               <p>
                 This figure provides the main detailed view of the mineral distribution
                 measured in chickpea.
@@ -1407,7 +1471,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 12. Mineral bubble strip</strong>
+              <strong>Figure 10. Mineral bubble strip</strong>
               <p>
                 The bubble-strip format emphasizes relative magnitude and makes the mineral
                 distribution easy to scan visually.
@@ -1446,7 +1510,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 13. Chickpea signature skyline</strong>
+              <strong>Figure 11. Chickpea signature skyline</strong>
               <p>
                 The skyline view condenses the full profile into an overall silhouette,
                 making the global shape of the chickpea signature easy to recognize.
@@ -1741,7 +1805,7 @@
           single ranking.
         </div>
 
-        <div class="full-stack">
+        <div class="two-up">
           <figure class="figure-card featured">
             <div class="plot-frame tall" data-src="plots/chickpea_macro_spotlight.png">
               <span class="zoom-chip">Click to enlarge</span>
@@ -1758,7 +1822,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 14. Chickpea macro spotlight</strong>
+              <strong>Figure 12. Chickpea macro spotlight</strong>
               <p>
                 This figure compares chickpea with the other legumes across the primary
                 macronutrient axes and clarifies its relative balance of carbohydrate,
@@ -1783,35 +1847,11 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 15. Chickpea similarity constellation</strong>
+              <strong>Figure 13. Chickpea similarity constellation</strong>
               <p>
                 This constellation-style view maps overall similarity and distance among
                 the foods in the dataset, showing which samples cluster nearer to chickpea
                 and which are more distinct.
-              </p>
-            </figcaption>
-          </figure>
-
-          <figure class="figure-card featured">
-            <div class="plot-frame tall" data-src="plots/chickpea_amino_halo.png">
-              <span class="zoom-chip">Click to enlarge</span>
-              <img
-                src="plots/chickpea_amino_halo.png"
-                alt="Chickpea amino halo comparison plot"
-                loading="lazy"
-                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
-              />
-              <div class="missing">
-                Image not found.<br />
-                Place <strong>chickpea_amino_halo.png</strong> in the same folder as this
-                HTML file.
-              </div>
-            </div>
-            <figcaption>
-              <strong>Figure 16. Chickpea amino halo</strong>
-              <p>
-                This plot isolates the amino-acid dimension and shows how the chickpea
-                protein profile sits relative to the others in the dataset.
               </p>
             </figcaption>
           </figure>
@@ -1821,7 +1861,6 @@
           comparison view beyond legumes and show how chickpea aligns with broader food
           categories across matched nutritional dimensions.
         </div>
-
         <div class="two-up">
           <figure class="figure-card featured">
             <div class="plot-frame standard" data-src="plots/chickpea_vs_animal_products_radar.png">
@@ -1839,7 +1878,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 17. Chickpea vs animal products radar</strong>
+              <strong>Figure 14. Chickpea vs animal products radar</strong>
               <p>
                 This radar plot compares chickpea with animal-product profiles and shows
                 where the chickpea nutrient pattern overlaps with, or departs from, that
@@ -1864,7 +1903,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 18. Chickpea vs composite dishes radar</strong>
+              <strong>Figure 15. Chickpea vs composite dishes radar</strong>
               <p>
                 This figure places chickpea beside composite dishes, making it easier to
                 see how a single whole-food legume compares with more mixed culinary
@@ -1889,7 +1928,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 19. Chickpea vs fruits radar</strong>
+              <strong>Figure 16. Chickpea vs fruits radar</strong>
               <p>
                 This comparison highlights the contrast between chickpea and fruit-like
                 nutrient geometry, especially the difference between a structured legume
@@ -1914,7 +1953,7 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 20. Chickpea vs grains radar</strong>
+              <strong>Figure 17. Chickpea vs grains radar</strong>
               <p>
                 This radar view compares chickpea with grains and helps distinguish where
                 the legume pattern converges with staple carbohydrate foods and where it
@@ -1941,11 +1980,141 @@
               </div>
             </div>
             <figcaption>
-              <strong>Figure 21. Chickpea vs vegetables radar</strong>
+              <strong>Figure 18. Chickpea vs vegetables radar</strong>
               <p>
                 This final radar comparison shows how chickpea relates to vegetables and
                 rounds out the category-level view of where the chickpea signature sits
                 across broader food groups.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+        <div class="comparison-text">
+          <strong>Category heatmap comparisons:</strong> these heatmaps compare chickpea
+          with broader food groups across the top nutrient dimensions, making it easier
+          to see which variables most strongly separate chickpea from each category.
+        </div>
+
+        <div class="two-up">
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_animal_products_top40_heatmap.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_animal_products_top40_heatmap.png"
+                alt="Heatmap comparing chickpea with animal products"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_animal_products_top40_heatmap.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 19. Chickpea vs animal products heatmap</strong>
+              <p>
+                This heatmap compares chickpea with animal products across the most
+                prominent variables and highlights the dimensions where the two profiles
+                differ most clearly.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_composite_dish_top40_heatmap.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_composite_dish_top40_heatmap.png"
+                alt="Heatmap comparing chickpea with composite dishes"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_composite_dish_top40_heatmap.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 20. Chickpea vs composite dishes heatmap</strong>
+              <p>
+                This figure shows how chickpea aligns with and diverges from composite
+                dishes across the top nutrient signals in a compact matrix view.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_fruits_top40_heatmap.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_fruits_top40_heatmap.png"
+                alt="Heatmap comparing chickpea with fruits"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_fruits_top40_heatmap.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 21. Chickpea vs fruits heatmap</strong>
+              <p>
+                This heatmap emphasizes the variables that distinguish chickpea from
+                fruits and makes the category-level contrast easier to read at a glance.
+              </p>
+            </figcaption>
+          </figure>
+
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_grains_top40_heatmap.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_grains_top40_heatmap.png"
+                alt="Heatmap comparing chickpea with grains"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_grains_top40_heatmap.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 22. Chickpea vs grains heatmap</strong>
+              <p>
+                This comparison heatmap shows where chickpea overlaps with grains and
+                where its protein- and fiber-linked features remain distinct.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="full-stack">
+          <figure class="figure-card featured">
+            <div class="plot-frame standard" data-src="plots/chickpea_vs_vegetables_top40_heatmap.png">
+              <span class="zoom-chip">Click to enlarge</span>
+              <img
+                src="plots/chickpea_vs_vegetables_top40_heatmap.png"
+                alt="Heatmap comparing chickpea with vegetables"
+                loading="lazy"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.missing').style.display='grid';"
+              />
+              <div class="missing">
+                Image not found.<br />
+                Place <strong>chickpea_vs_vegetables_top40_heatmap.png</strong> in the same folder as
+                this HTML file.
+              </div>
+            </div>
+            <figcaption>
+              <strong>Figure 23. Chickpea vs vegetables heatmap</strong>
+              <p>
+                This final heatmap compares chickpea with vegetables and completes the
+                category-based matrix view across the broader food groups.
               </p>
             </figcaption>
           </figure>
@@ -2015,8 +2184,9 @@
 
       document.querySelectorAll(".plot-frame").forEach((frame) => {
         frame.addEventListener("click", () => {
-          const src = frame.dataset.src;
           const img = frame.querySelector("img");
+          // Prefer the currently displayed image (supports SVG), fallback to data-src.
+          const src = (img && img.getAttribute("src")) || frame.dataset.src;
           const caption = frame.parentElement.querySelector("figcaption");
 
           lightboxImg.src = src;
