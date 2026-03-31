@@ -19,6 +19,7 @@ This project is an interactive **UMAP Dashboard** built using HTML, CSS, and Jav
   - Color points by a specific column (e.g., `subcategory`).
   - Change point symbols based on a column (e.g., `food`).
   - Adjust point size and opacity.
+  - **Compression Factor**: Non-linear transformation that brings clusters closer together while maintaining their proportional distances. A cluster twice as far stays proportionally twice as far, but the absolute distance is reduced (lower values = more compression, 1.0 = original spacing).
 
 ### 3. Filtering
 - **Search**: Filter rows by searching for specific text across multiple columns.
@@ -76,6 +77,7 @@ This project is an interactive **UMAP Dashboard** built using HTML, CSS, and Jav
 ### Customize Display
 1. Use the dropdowns to change the color, symbol, and size of points.
 2. Adjust point size, opacity, and scaling.
+3. Use the **Compression factor** slider to bring clusters closer together (recommended: 0.5-0.8 for tighter clustering while maintaining proportions).
 
 ### Filter Data
 1. Use the search bar to filter rows by text.
