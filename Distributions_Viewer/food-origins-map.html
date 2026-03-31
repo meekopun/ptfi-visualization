@@ -365,11 +365,11 @@ body.light{
 <script src="https://unpkg.com/topojson-client@3"></script>
 <script>
 const GROUP_COLORS = {
-  "Legumes":         "#4CAF50",
-  "Grains":          "#FFB300",
-  "Fruits":          "#E91E63",
-  "Vegetables":      "#009688",
-  "Animal Products": "#FF5722",
+  "Legumes":         "#06402B",
+  "Grains":          "#c7720a",
+  "Fruits":          "#AA336A",
+  "Vegetables":      "#004F4F",
+  "Animal Products": "#8B0000",
   "Composite dish":  "#AB47BC"
 };
 
@@ -1077,15 +1077,27 @@ function getProductionForCountry(geoName){
   return result;
 }
 
-function blendProductionColors(prod){
-  let r=0,g=0,b=0,total=0;
-  Object.entries(prod).forEach(([item,tonnes])=>{
+function blendProductionColors(prod) {
+  let r = 0, g = 0, b = 0, total = 0;
+
+  Object.entries(prod).forEach(([item, tonnes]) => {
     const grp = ITEM_TO_GROUP[item];
     const c = hexToRgb(GROUP_COLORS[grp]);
-    r+=c.r*tonnes; g+=c.g*tonnes; b+=c.b*tonnes; total+=tonnes;
+
+    // Scale the RGB values to make the colors more vibrant
+    r += c.r * tonnes * 1.5; // Increase the red intensity
+    g += c.g * tonnes * 1.5; // Increase the green intensity
+    b += c.b * tonnes * 1.5; // Increase the blue intensity
+    total += tonnes;
   });
-  if(total===0) return null;
-  return rgbToHex(Math.round(r/total),Math.round(g/total),Math.round(b/total));
+
+  if (total === 0) return null;
+
+  return rgbToHex(
+    Math.min(255, Math.round(r / total)),
+    Math.min(255, Math.round(g / total)),
+    Math.min(255, Math.round(b / total))
+  );
 }
 
 function formatTonnes(t){
@@ -1101,21 +1113,38 @@ function getItemMax(){
   return Math.max(...Object.values(countries));
 }
 
-function countryStyle(feature){
+function countryStyle(feature) {
   const prod = getProductionForCountry(feature.properties.name);
-  const total = Object.values(prod).reduce((s,v)=>s+v,0);
-  if(total===0) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
+  const total = Object.values(prod).reduce((s, v) => s + v, 0);
+
+  if (total === 0) {
+    return { fillColor: "transparent", fillOpacity: 0, weight: 0, color: "transparent" };
+  }
+
   let color;
-  if(selectedItem){
+  if (selectedItem) {
     color = GROUP_COLORS[ITEM_TO_GROUP[selectedItem]];
   } else {
     color = blendProductionColors(prod);
   }
-  if(!color) return {fillColor:"transparent",fillOpacity:0,weight:0,color:"transparent"};
+
+  if (!color) {
+    return { fillColor: "transparent", fillOpacity: 0, weight: 0, color: "transparent" };
+  }
+
   const maxVal = getItemMax();
-  const t = Math.log10(1+total)/Math.log10(1+maxVal);
-  const op = 0.2 + 0.6*t;
-  return {fillColor:color, fillOpacity:op, color:color, weight:1, opacity:Math.min(0.9,op+0.15)};
+  const t = Math.log10(1 + total) / Math.log10(1 + maxVal);
+
+  // Adjust the opacity range to make the difference more extreme
+  const op = 0.1 + 0.9 * t; // Previously: 0.2 + 0.6 * t
+
+  return {
+    fillColor: color,
+    fillOpacity: op,
+    color: color,
+    weight: 1,
+    opacity: Math.min(1, op + 0.2), // Slightly increase border opacity
+  };
 }
 
 function updateHeatmap(){
