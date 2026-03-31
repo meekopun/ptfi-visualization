@@ -8,6 +8,7 @@ Interactive data visualization tools for food metabolomics analysis.
 - **Chickpea Atlas Dashboard** (`Dashboard_Viewer/`) - Interactive metabolomics data exploration with plots and comparisons
 - **Food Network Viewer** (`Network_Viewer/`) - Relationship visualization between foods based on chemical features
 - **UMAP Dashboard** (`UMAP_Viewer/`) - Dimensionality reduction visualization for metabolomics data
+- **Distribution Dashboard** (`Distribution_Viewer/`) - Distribution of primary groups globally
 
 ## Local Usage
 
