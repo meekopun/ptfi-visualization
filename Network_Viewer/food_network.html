@@ -93,7 +93,13 @@
           <div class="btns"><button id="renderBtn" class="primary">Render network</button></div>
         </div>
         <div class="section">
-          <h2>3) Search</h2>
+          <h2>3) View</h2>
+          <label style="margin-bottom:6px;">Compound visibility:</label>
+          <div class="btns"><button id="expandAllBtn">Expand all foods</button><button id="collapseAllBtn">Collapse all</button></div>
+          <p class="hint" style="margin-top:8px;">Click a food node to show/hide its compounds. Initially only foods are visible.</p>
+        </div>
+        <div class="section">
+          <h2>4) Search</h2>
           <label for="searchInput">Find node by name</label>
           <input id="searchInput" type="search" placeholder="artichoke, Omega-3, Legumes..." />
           <div class="btns"><button id="searchBtn">Find</button><button id="resetBtn">Reset view</button></div>
@@ -129,6 +135,18 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       minerals:'#17becf',
       amino:'#ff7f0e',
       macros:'#9467bd'
+    };
+
+    const FOOD_GROUP_COLORS = {
+      'Legumes': '#8B4789',
+      'Vegetables': '#2ca02c',
+      'Grains': '#e6a532',
+      'Animal Products': '#d62728',
+      'Fruits': '#ff69b4',
+      'Nuts': '#8B4513',
+      'Seafood': '#1E90FF',
+      'Dairy': '#FFD700',
+      'Other': '#95A5A6'
     };
 
     const FAMILY_LABELS = {
@@ -443,6 +461,22 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
     const detailsEl = document.getElementById('details');
     const legendEl = document.getElementById('legend');
     const tsvInput = document.getElementById('tsvInput');
+    
+    const renderBtn = document.getElementById('renderBtn');
+    const loadSampleBtn = document.getElementById('loadSampleBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+    const searchBtn = document.getElementById('searchBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const searchInput = document.getElementById('searchInput');
+    const topNInput = document.getElementById('topNInput');
+    const minValueInput = document.getElementById('minValueInput');
+    const showFatty = document.getElementById('showFatty');
+    const showCarbs = document.getElementById('showCarbs');
+    const showMinerals = document.getElementById('showMinerals');
+    const showAmino = document.getElementById('showAmino');
+    const showMacros = document.getElementById('showMacros');
 
     let graph = { nodes: [], links: [] };
     let hovered = null;
@@ -452,6 +486,7 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
     let lastMouse = { x: 0, y: 0 };
     let transform = { x: 0, y: 0, scale: 1 };
     let anim = null;
+    let expandedFoods = new Set(); // Track which food nodes have their compounds visible
 
     function resizeCanvas(){
       const rect = wrap.getBoundingClientRect();
@@ -501,8 +536,9 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
     }
 
     function hitNode(wx, wy){
-      for (let i = graph.nodes.length - 1; i >= 0; i--) {
-        const n = graph.nodes[i];
+      const visibleNodes = getVisibleNodes();
+      for (let i = visibleNodes.length - 1; i >= 0; i--) {
+        const n = visibleNodes[i];
         const dx = wx - n.x;
         const dy = wy - n.y;
         if (dx * dx + dy * dy <= (n.radius + 5) * (n.radius + 5)) return n;
@@ -538,7 +574,58 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
     }
 
     function showIntroDetails(){
-      detailsEl.innerHTML = '<h3>Node details</h3><div class="meta">Click a node to inspect its metadata.</div>';
+      detailsEl.innerHTML = '<h3>Node details</h3><div class="meta">Click a food node to show/hide its compounds. Hover over nodes to see connections.</div>';
+    }
+
+    function isNodeVisible(node) {
+      // Food nodes are always visible
+      if (node.kind === 'sample') return true;
+      
+      // Compound nodes are only visible if their parent food is expanded
+      // Find the food node this compound is connected to
+      for (const link of graph.links) {
+        if (link.target.id === node.id && link.source.kind === 'sample') {
+          return expandedFoods.has(link.source.id);
+        }
+      }
+      return false;
+    }
+
+    function getVisibleNodes() {
+      return graph.nodes.filter(isNodeVisible);
+    }
+
+    function getVisibleLinks() {
+      return graph.links.filter(link => {
+        // Show food-to-food links always
+        if (link.relation === 'same_group') return true;
+        
+        // Show food-to-compound links only if compound is visible
+        return isNodeVisible(link.target);
+      });
+    }
+
+    function toggleFoodExpansion(foodNode) {
+      if (foodNode.kind !== 'sample') return;
+      
+      if (expandedFoods.has(foodNode.id)) {
+        expandedFoods.delete(foodNode.id);
+      } else {
+        expandedFoods.add(foodNode.id);
+      }
+      draw();
+    }
+
+    function expandAllFoods() {
+      graph.nodes.filter(n => n.kind === 'sample').forEach(n => expandedFoods.add(n.id));
+      draw();
+      setStatus('Expanded all food nodes to show their compounds.');
+    }
+
+    function collapseAllFoods() {
+      expandedFoods.clear();
+      draw();
+      setStatus('Collapsed all food nodes to hide compounds.');
     }
 
     function draw(){
@@ -548,6 +635,9 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       ctx.save();
       ctx.translate(transform.x, transform.y);
       ctx.scale(transform.scale, transform.scale);
+
+      const visibleNodes = getVisibleNodes();
+      const visibleLinks = getVisibleLinks();
 
       let highlight = null;
       if (hovered || selected) highlight = connectedNodeIds(hovered || selected);
@@ -597,6 +687,9 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       // Draw compound cluster backgrounds
       if (graph.foods && transform.scale > 0.6) {
         for (const food of graph.foods) {
+          // Only draw compound clusters for expanded foods
+          if (!expandedFoods.has(food.id)) continue;
+          
           // Find all compounds connected to this food, grouped by family
           const familyGroups = {
             fatty: [],
@@ -650,7 +743,7 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       }
 
       // Draw food-to-food links first (thicker, more visible)
-      for (const link of graph.links) {
+      for (const link of visibleLinks) {
         if (link.relation === 'same_group') {
           const active = !highlight || (highlight.links.has(link));
           ctx.beginPath();
@@ -663,7 +756,7 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       }
 
       // Draw food-to-compound links (very subtle)
-      for (const link of graph.links) {
+      for (const link of visibleLinks) {
         if (link.relation !== 'same_group') {
           const active = !highlight || highlight.links.has(link);
           ctx.beginPath();
@@ -676,9 +769,15 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       }
 
       // Draw nodes
-      for (const node of graph.nodes) {
+      for (const node of visibleNodes) {
         const active = !highlight || highlight.nodes.has(node.id);
-        const color = COLORS[node.kind] || '#888';
+        let color;
+        if (node.kind === 'sample') {
+          const group = (node.meta.primary_group || 'Other').trim();
+          color = FOOD_GROUP_COLORS[group] || FOOD_GROUP_COLORS['Other'];
+        } else {
+          color = COLORS[node.kind] || '#888';
+        }
         const r = node.radius + (((hovered && hovered.id === node.id) || (selected && selected.id === node.id)) ? 3 : 0);
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
@@ -687,13 +786,23 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
         ctx.lineWidth = node.kind === 'sample' ? 3 : 2;
         ctx.strokeStyle = active ? '#ffffff' : 'rgba(255,255,255,0.4)';
         ctx.stroke();
+        
+        // Draw +/- indicator on food nodes to show expand/collapse state
+        if (node.kind === 'sample') {
+          const isExpanded = expandedFoods.has(node.id);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(isExpanded ? '−' : '+', node.x, node.y);
+        }
       }
 
       // Draw labels - food samples always, compounds only when zoomed in or highlighted
       ctx.textAlign = 'left';
       ctx.font = '12px sans-serif';
       ctx.textBaseline = 'middle';
-      for (const node of graph.nodes) {
+      for (const node of visibleNodes) {
         const active = !highlight || highlight.nodes.has(node.id);
         const shouldShowLabel = node.kind === 'sample' || 
                                 transform.scale > 1.2 || 
@@ -799,9 +908,11 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
         graph = buildNetwork(parsed);
         selected = null;
         hovered = null;
+        expandedFoods.clear(); // Reset expansion state
+        updateLegend();
         updateStats(graph);
         showIntroDetails();
-        setStatus(`Rendered ${graph.nodes.length} nodes and ${graph.links.length} links from ${parsed.rows.length} food samples.`);
+        setStatus(`Rendered ${graph.nodes.length} nodes and ${graph.links.length} links from ${parsed.rows.length} food samples. Click food nodes to show/hide compounds.`);
       } catch (err) {
         setStatus('Could not render graph.\n' + err.message);
       }
@@ -836,6 +947,10 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       const n = hitNode(p.x, p.y);
       lastMouse = { x: e.clientX, y: e.clientY };
       if (n) {
+        // If it's a food node, toggle expansion
+        if (n.kind === 'sample') {
+          toggleFoodExpansion(n);
+        }
         dragNode = n;
         dragNode.fixed = true;
         selected = n;
@@ -895,6 +1010,10 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
     });
 
     resetBtn.addEventListener('click', resetView);
+
+    expandAllBtn.addEventListener('click', expandAllFoods);
+
+    collapseAllBtn.addEventListener('click', collapseAllFoods);
 
     searchBtn.addEventListener('click', () => {
       const node = findNodeByQuery(searchInput.value);

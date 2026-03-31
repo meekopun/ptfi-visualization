@@ -527,10 +527,45 @@
         </div>
 
         <div class="row">
+          <label for="clusterCompression">Cluster compression (< 1 = pull clumps together, 1.0 = normal, > 1 = push apart)</label>
+          <input id="clusterCompression" type="number" min="0.1" max="5.0" step="0.05" value="1.0" />
+        </div>
+
+        <div class="row">
           <label>
             <input id="showLabels" type="checkbox" />
             Show point labels (compound)
           </label>
+        </div>
+
+        <div class="row">
+          <label for="transformType">Transform</label>
+          <select id="transformType">
+            <option value="none">None</option>
+            <option value="log">Log (log₁₀)</option>
+            <option value="ln">Natural log (ln)</option>
+            <option value="sqrt">Square root</option>
+            <option value="cbrt">Cube root</option>
+            <option value="square">Power (x²)</option>
+            <option value="cube">Cube (x³) - spreads more</option>
+            <option value="tanh">Tanh - spreads middle values</option>
+            <option value="signpower">Sign-preserving x² - spreads w/ negatives</option>
+            <option value="reciprocal">Reciprocal (1/x)</option>
+            <option value="exp">Exponential (eˣ)</option>
+          </select>
+        </div>
+
+        <div class="section-title" style="margin-top: 18px;">Axis Scaling</div>
+
+        <div class="two-col">
+          <div>
+            <label for="xAxisScale">X-axis scale</label>
+            <input id="xAxisScale" type="number" min="0.1" max="5.0" step="0.1" value="1.0" />
+          </div>
+          <div>
+            <label for="yAxisScale">Y-axis scale</label>
+            <input id="yAxisScale" type="number" min="0.1" max="5.0" step="0.1" value="1.0" />
+          </div>
         </div>
 
         <hr style="border-color: var(--border); opacity: 0.7; margin: 18px 0;">
@@ -1197,6 +1232,29 @@
       activeFilters.innerHTML = bits.length ? bits.join("") : "No active filters.";
     }
 
+    function getAxisTitle(baseTitle, transformType) {
+      let title = baseTitle;
+      
+      if (transformType !== 'none') {
+        const transformLabels = {
+          'log': 'log\u2081\u2080',
+          'ln': 'ln',
+          'sqrt': '\u221a',
+          'cbrt': '\u221b',
+          'square': 'x\u00b2',
+          'cube': 'x\u00b3',
+          'tanh': 'tanh',
+          'signpower': 'x|x|',
+          'reciprocal': '1/x',
+          'exp': 'e\u02e3'
+        };
+        const label = transformLabels[transformType] || transformType;
+        title += ` (${label})`;
+      }
+      
+      return title;
+    }
+
     function renderPlot() {
       const plottable = filteredData.filter(d => d.__has_umap);
       const colorBy = colorByEl.value;
@@ -1206,6 +1264,11 @@
       const sizeScale = Math.max(0, toNumber(sizeScaleEl.value) || 12);
       const opacity = Math.min(1, Math.max(0.1, toNumber(opacityEl.value) || 0.85));
       const showLabels = showLabelsEl.checked;
+
+      const transformType = document.getElementById('transformType').value;
+      const xAxisScale = Math.max(0.1, Math.min(5.0, toNumber(document.getElementById('xAxisScale').value) || 1.0));
+      const yAxisScale = Math.max(0.1, Math.min(5.0, toNumber(document.getElementById('yAxisScale').value) || 1.0));
+      const clusterCompression = Math.max(0.1, Math.min(5.0, toNumber(document.getElementById('clusterCompression').value) || 1.0));
 
       if (!plottable.length) {
         Plotly.newPlot(
@@ -1238,16 +1301,105 @@
       const symbolMap = makeSymbolMap(plottable, symbolBy);
       const traces = [];
 
+      // Helper function to apply mathematical transformation
+      const applyTransform = (value, type) => {
+        switch(type) {
+          case 'log':
+            const shifted = value < 0 ? value + Math.abs(Math.min(...plottable.map(r => Math.min(r.__umap1_num, r.__umap2_num)))) + 1 : value + 1;
+            return Math.log10(shifted);
+          case 'ln':
+            const shiftedLn = value < 0 ? value + Math.abs(Math.min(...plottable.map(r => Math.min(r.__umap1_num, r.__umap2_num)))) + 1 : value + 1;
+            return Math.log(shiftedLn);
+          case 'sqrt':
+            const shiftedSqrt = value < 0 ? value + Math.abs(Math.min(...plottable.map(r => Math.min(r.__umap1_num, r.__umap2_num)))) : value;
+            return Math.sqrt(shiftedSqrt);
+          case 'cbrt':
+            return Math.cbrt(value);
+          case 'square':
+            return value * value;
+          case 'cube':
+            return value * value * value;
+          case 'tanh':
+            return Math.tanh(value * 2);
+          case 'signpower':
+            return value * Math.abs(value);
+          case 'reciprocal':
+            return value === 0 ? 0 : 1 / value;
+          case 'exp':
+            return Math.min(Math.exp(value), 1e10);
+          default:
+            return value;
+        }
+      };
+
+      // Extract and transform coordinates
+      let allXValues = plottable.map(r => r.__umap1_num);
+      let allYValues = plottable.map(r => r.__umap2_num);
+
+      // Apply transformation
+      if (transformType !== 'none') {
+        allXValues = allXValues.map(v => applyTransform(v, transformType));
+        allYValues = allYValues.map(v => applyTransform(v, transformType));
+      }
+
+      // Compute center of mass before spacing so the viewport stays fixed
+      const xCenterRaw = (Math.min(...allXValues) + Math.max(...allXValues)) / 2;
+      const yCenterRaw = (Math.min(...allYValues) + Math.max(...allYValues)) / 2;
+      const xSpanRaw = Math.max(...allXValues) - Math.min(...allXValues);
+      const ySpanRaw = Math.max(...allYValues) - Math.min(...allYValues);
+
+      // Cluster compression: apply a power function to distance from center.
+      // Exponent < 1 compresses large distances more than small ones,
+      // pulling distant clumps closer while keeping nearby points relatively intact.
+      if (clusterCompression !== 1.0) {
+        const maxDist = Math.max(
+          ...allXValues.map((x, i) => Math.hypot(x - xCenterRaw, allYValues[i] - yCenterRaw))
+        ) || 1;
+        for (let i = 0; i < allXValues.length; i++) {
+          const dx = allXValues[i] - xCenterRaw;
+          const dy = allYValues[i] - yCenterRaw;
+          const dist = Math.hypot(dx, dy);
+          if (dist === 0) continue;
+          // Normalize distance, apply power, then scale back
+          const normDist = dist / maxDist;
+          const newNormDist = Math.pow(normDist, clusterCompression);
+          const scale = (newNormDist * maxDist) / dist;
+          allXValues[i] = xCenterRaw + dx * scale;
+          allYValues[i] = yCenterRaw + dy * scale;
+        }
+      }
+
+      // Use the ORIGINAL (unscaled) span for the axis range so spacing is visible
+      const xPadding = xSpanRaw * 0.05;
+      const yPadding = ySpanRaw * 0.05;
+
+      // Axis scale zooms the viewport: scale > 1 zooms in, < 1 zooms out
+      const xHalfSpan = (xSpanRaw + 2 * xPadding) / 2 / xAxisScale;
+      const yHalfSpan = (ySpanRaw + 2 * yPadding) / 2 / yAxisScale;
+      const xMin = xCenterRaw - xHalfSpan;
+      const xMax = xCenterRaw + xHalfSpan;
+      const yMin = yCenterRaw - yHalfSpan;
+      const yMax = yCenterRaw + yHalfSpan;
+
+      // Create a map for quick lookup
+      const coordMap = new Map();
+      plottable.forEach((row, idx) => {
+        coordMap.set(row, { x: allXValues[idx], y: allYValues[idx] });
+      });
+
       for (const [groupName, rows] of Object.entries(groups)) {
         const sizes = computeSizes(rows, sizeBy, baseSize, sizeScale);
         const traceColor = getTraceColor(groupName, colorBy);
+
+        const xValues = rows.map(r => coordMap.get(r).x);
+        const yValues = rows.map(r => coordMap.get(r).y);
 
         traces.push({
           type: "scatter",
           mode: showLabels ? "markers+text" : "markers",
           name: groupName === "__single__" ? "data" : String(groupName),
-          x: rows.map(r => r.__umap1_num),
-          y: rows.map(r => r.__umap2_num),
+          x: xValues,
+          y: yValues,
           text: rows.map(r => r.compound || ""),
           textposition: "top center",
           textfont: { size: 10, color: "#374151" },
@@ -1295,14 +1447,16 @@
         },
         hovermode: "closest",
         xaxis: {
-          title: "UMAP1",
+          title: getAxisTitle("UMAP1", transformType),
           zeroline: false,
-          gridcolor: "rgba(31,41,55,0.12)"
+          gridcolor: "rgba(31,41,55,0.12)",
+          range: [xMin, xMax]
         },
         yaxis: {
-          title: "UMAP2",
+          title: getAxisTitle("UMAP2", transformType),
           zeroline: false,
-          gridcolor: "rgba(31,41,55,0.12)"
+          gridcolor: "rgba(31,41,55,0.12)",
+          range: [yMin, yMax]
         },
         title: {
           text: ``,
@@ -1425,7 +1579,7 @@
       applyFilters();
     });
 
-    [colorByEl, symbolByEl, sizeByEl, pointSizeEl, sizeScaleEl, opacityEl, showLabelsEl].forEach(el => {
+    [colorByEl, symbolByEl, sizeByEl, pointSizeEl, sizeScaleEl, opacityEl, showLabelsEl, document.getElementById('clusterCompression'), document.getElementById('transformType'), document.getElementById('xAxisScale'), document.getElementById('yAxisScale')].forEach(el => {
       el.addEventListener("change", () => {
         if (rawData.length) renderPlot();
       });
