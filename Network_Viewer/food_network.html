@@ -66,31 +66,29 @@
       </div>
     </nav>
     <h1>Food Network Viewer</h1>
-    <p class="sub">Paste your tab-separated food table and select which feature families to include.</p>
+    <p class="sub">Compounds orbit food samples like planets. Foods are clustered by type (fruits, vegetables, legumes, etc.). Size = concentration. Colors = chemical classification. Similar compounds cluster together.</p>
     <div class="layout">
       <div class="panel controls">
         <div class="section">
           <h2>1) Paste your table</h2>
-          <p class="hint">Paste the full table exactly as tab-separated text, including the header row. Each food row becomes a sample node. The graph only links each sample to its strongest selected features.</p>
+          <p class="hint">Paste the full table exactly as tab-separated text, including the header row. Each food becomes a central node with compounds orbiting around it. Similar compounds cluster together based on chemical classification.</p>
           <textarea id="tsvInput"></textarea>
           <div class="btns"><button id="loadSampleBtn">Load example rows</button><button id="clearBtn">Clear</button></div>
         </div>
         <div class="section">
           <h2>2) Pick what to show</h2>
           <div class="grid2">
-            <div><label for="topNInput">Top features per sample</label><input id="topNInput" type="number" min="1" max="20" step="1" value="5" /></div>
-            <div><label for="minValueInput">Minimum value</label><input id="minValueInput" type="number" min="0" step="0.01" value="0.5" /></div>
+            <div><label for="topNInput">Top features per sample</label><input id="topNInput" type="number" min="1" max="30" step="1" value="10" /></div>
+            <div><label for="minValueInput">Minimum value</label><input id="minValueInput" type="number" min="0" step="0.01" value="0.1" /></div>
           </div>
           <div style="height:10px"></div>
+          <label style="margin-bottom:6px;">Chemical families to display:</label>
           <div class="checks">
-            <label class="check"><input type="checkbox" id="showPrimary" checked /> Primary group</label>
-            <label class="check"><input type="checkbox" id="showSecondary" checked /> Secondary group</label>
-            <label class="check"><input type="checkbox" id="showProcessing" checked /> Processing</label>
             <label class="check"><input type="checkbox" id="showFatty" checked /> Fatty acids / lipids</label>
-            <label class="check"><input type="checkbox" id="showCarbs" checked /> Carbs / fibers / sugars</label>
+            <label class="check"><input type="checkbox" id="showCarbs" checked /> Carbs / sugars</label>
             <label class="check"><input type="checkbox" id="showMinerals" checked /> Minerals</label>
             <label class="check"><input type="checkbox" id="showAmino" checked /> Amino acids</label>
-            <label class="check"><input type="checkbox" id="showMacros" checked /> Macros</label>
+            <label class="check"><input type="checkbox" id="showMacros" checked /> Macronutrients</label>
           </div>
           <div class="btns"><button id="renderBtn" class="primary">Render network</button></div>
         </div>
@@ -126,26 +124,20 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
 
     const COLORS = {
       sample:'#1f77b4',
-      primary:'#ff7f0e',
-      secondary:'#9467bd',
-      processing:'#8c564b',
       fatty:'#d62728',
       carbs:'#2ca02c',
       minerals:'#17becf',
-      amino:'#bcbd22',
-      macros:'#7f7f7f'
+      amino:'#ff7f0e',
+      macros:'#9467bd'
     };
 
     const FAMILY_LABELS = {
       sample:'Food sample',
-      primary:'Primary group',
-      secondary:'Secondary group',
-      processing:'Processing',
-      fatty:'Fatty acids / lipids',
-      carbs:'Carbs / fibers / sugars',
+      fatty:'Fatty acids & lipids',
+      carbs:'Sugars & carbohydrates',
       minerals:'Minerals',
       amino:'Amino acids',
-      macros:'Macros'
+      macros:'Macronutrients'
     };
 
     const META_COLUMNS = new Set([
@@ -225,9 +217,6 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
 
     function selectedFamilies(){
       return {
-        primary: showPrimary.checked,
-        secondary: showSecondary.checked,
-        processing: showProcessing.checked,
         fatty: showFatty.checked,
         carbs: showCarbs.checked,
         minerals: showMinerals.checked,
@@ -242,6 +231,7 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
   const minValue = Math.max(0, Number(minValueInput.value) || 0);
   const nodeMap = new Map();
   const links = [];
+  const foods = [];
 
   function addNode(id, kind, label, meta = {}){
     if (!nodeMap.has(id)) {
@@ -250,26 +240,47 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
         kind,
         label,
         meta,
-        x: 150 + Math.random() * Math.max(300, canvas.width / (window.devicePixelRatio || 1) - 300),
-        y: 100 + Math.random() * Math.max(300, canvas.height / (window.devicePixelRatio || 1) - 200),
+        x: 0,
+        y: 0,
         vx: 0,
         vy: 0,
-        radius: kind === 'sample' ? 12 : 9,
+        radius: 8,
         fixed: false,
-        abundanceSum: 0,
-        abundanceCount: 0,
-        abundanceMean: 0
+        concentration: 0
       });
     }
     return nodeMap.get(id);
   }
 
+  // Group foods by their primary food group
+  const foodGroups = {};
+  for (const row of parsed.rows) {
+    const primary = (row['Food Group Primary'] || 'Other').trim();
+    if (!foodGroups[primary]) foodGroups[primary] = [];
+    foodGroups[primary].push(row);
+  }
+
+  // Position food groups in a circular arrangement
+  const groupNames = Object.keys(foodGroups);
+  const numGroups = groupNames.length;
+  const groupPositions = {};
+  const centerX = 600;
+  const centerY = 600;
+  const groupRadius = 350;
+
+  groupNames.forEach((groupName, idx) => {
+    const angle = (idx / numGroups) * Math.PI * 2 - Math.PI / 2;
+    groupPositions[groupName] = {
+      x: centerX + Math.cos(angle) * groupRadius,
+      y: centerY + Math.sin(angle) * groupRadius
+    };
+  });
+
+  // Process each food sample
   for (const row of parsed.rows) {
     const sampleName = row['Sample Name'] || row['Globally Unique Sample ID'] || 'Unnamed sample';
     const sampleId = row['Globally Unique Sample ID'] || sampleName;
-    const primary = (row['Food Group Primary'] || '').trim();
-    const secondary = (row['Food Group Secondary'] || '').trim();
-    const processing = (row['Processing'] || '').trim();
+    const primary = (row['Food Group Primary'] || 'Other').trim();
 
     const sampleNode = addNode(
       'sample:' + sampleId,
@@ -279,8 +290,6 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
         sample_name: sampleName,
         unique_id: sampleId,
         primary_group: primary,
-        secondary_group: secondary,
-        processing,
         protein: parseNumber(row['Protein']),
         carbohydrate: parseNumber(row['Carbohydrate']),
         water: parseNumber(row['Water']),
@@ -288,114 +297,143 @@ Black olive (canned)	Fruits	0	0	0	0	0	0	0	0	0	0	0	0	0	1.319775	0.116715	0	0.0125
       }
     );
 
-    if (picks.primary && primary) {
-      const t = addNode('primary:' + primary, 'primary', primary, { primary_group: primary });
-      links.push({ source: sampleNode, target: t, value: 1, relation: 'primary group' });
-    }
+    // Position foods in clusters by their group
+    const groupCenter = groupPositions[primary];
+    const foodsInGroup = foodGroups[primary];
+    const foodIndex = foodsInGroup.indexOf(row);
+    const numFoodsInGroup = foodsInGroup.length;
 
-    if (picks.secondary && secondary) {
-      const t = addNode('secondary:' + secondary, 'secondary', secondary, { secondary_group: secondary });
-      links.push({ source: sampleNode, target: t, value: 1, relation: 'secondary group' });
+    // Arrange foods in this group in a circle
+    if (numFoodsInGroup === 1) {
+      sampleNode.x = groupCenter.x;
+      sampleNode.y = groupCenter.y;
+    } else {
+      const foodAngle = (foodIndex / numFoodsInGroup) * Math.PI * 2;
+      const foodGroupRadius = 60 + numFoodsInGroup * 8;
+      sampleNode.x = groupCenter.x + Math.cos(foodAngle) * foodGroupRadius;
+      sampleNode.y = groupCenter.y + Math.sin(foodAngle) * foodGroupRadius;
     }
+    
+    sampleNode.fixed = true;
+    sampleNode.radius = 16;
+    sampleNode.foodGroup = primary;
 
-    if (picks.processing && processing) {
-      const t = addNode('processing:' + processing, 'processing', processing, { processing });
-      links.push({ source: sampleNode, target: t, value: 1, relation: 'processing' });
-    }
+    // Collect features for this food, grouped by chemical family
+    const featuresByFamily = {
+      fatty: [],
+      carbs: [],
+      minerals: [],
+      amino: [],
+      macros: []
+    };
 
-    const features = [];
     for (const col of parsed.headers) {
       if (META_COLUMNS.has(col)) continue;
       const family = familyOfColumn(col);
       if (!family || !picks[family]) continue;
       const value = parseNumber(row[col]);
       if (value == null || value < minValue) continue;
-      features.push({ col, family, value });
+      featuresByFamily[family].push({ col, family, value });
     }
 
-    features.sort((a, b) => b.value - a.value);
+    // Sort features by value and take top N per family
+    let allFeatures = [];
+    for (const family in featuresByFamily) {
+      const features = featuresByFamily[family];
+      features.sort((a, b) => b.value - a.value);
+      allFeatures.push(...features.slice(0, Math.ceil(topN / 2)));
+    }
 
-    for (const f of features.slice(0, topN)) {
-      const t = addNode(
-        f.family + ':' + f.col,
-        f.family,
-        f.col,
-        { feature: f.col, family: f.family }
-      );
+    // Sort all features by value and take top N overall
+    allFeatures.sort((a, b) => b.value - a.value);
+    allFeatures = allFeatures.slice(0, topN);
 
-      links.push({
-        source: sampleNode,
-        target: t,
-        value: f.value,
-        relation: 'contains',
-        column: f.col
+    // Re-group by family for clustering
+    const selectedByFamily = {
+      fatty: [],
+      carbs: [],
+      minerals: [],
+      amino: [],
+      macros: []
+    };
+    for (const f of allFeatures) {
+      selectedByFamily[f.family].push(f);
+    }
+
+    // Position compounds in orbital clusters around the food
+    const orbitRadius = 140;
+    const families = ['fatty', 'carbs', 'minerals', 'amino', 'macros'];
+    let clusterIndex = 0;
+    let totalClusters = families.filter(fam => selectedByFamily[fam].length > 0).length;
+
+    for (const family of families) {
+      const features = selectedByFamily[family];
+      if (features.length === 0) continue;
+
+      // Position this cluster in orbit
+      const clusterAngle = (clusterIndex / totalClusters) * Math.PI * 2;
+      const clusterX = sampleNode.x + Math.cos(clusterAngle) * orbitRadius;
+      const clusterY = sampleNode.y + Math.sin(clusterAngle) * orbitRadius;
+
+      // Arrange compounds within the cluster
+      features.forEach((f, i) => {
+        const compoundId = family + ':' + f.col + ':' + sampleId;
+        const compound = addNode(
+          compoundId,
+          family,
+          f.col,
+          { feature: f.col, family: family, food: sampleName, concentration: f.value }
+        );
+
+        // Position within cluster using a tight circular arrangement
+        const angle = (i / features.length) * Math.PI * 2;
+        const clusterSpread = 25 + features.length * 3;
+        compound.x = clusterX + Math.cos(angle) * clusterSpread;
+        compound.y = clusterY + Math.sin(angle) * clusterSpread;
+        compound.concentration = f.value;
+
+        // Size based on concentration
+        const minRadius = 4;
+        const maxRadius = 14;
+        const logValue = Math.log10(f.value + 1);
+        const maxLogValue = Math.log10(Math.max(...allFeatures.map(ff => ff.value)) + 1);
+        compound.radius = minRadius + (logValue / maxLogValue) * (maxRadius - minRadius);
+
+        links.push({
+          source: sampleNode,
+          target: compound,
+          value: f.value,
+          relation: 'contains',
+          column: f.col
+        });
       });
 
-      // accumulate abundance for sizing
-      sampleNode.abundanceSum += f.value;
-      sampleNode.abundanceCount += 1;
+      clusterIndex++;
+    }
 
-      t.abundanceSum += f.value;
-      t.abundanceCount += 1;
+    foods.push(sampleNode);
+  }
+
+  // Add links between foods in the same group
+  for (const groupName in foodGroups) {
+    const foodsInGroup = foods.filter(f => f.foodGroup === groupName);
+    for (let i = 0; i < foodsInGroup.length; i++) {
+      for (let j = i + 1; j < foodsInGroup.length; j++) {
+        links.push({
+          source: foodsInGroup[i],
+          target: foodsInGroup[j],
+          value: 0.5,
+          relation: 'same_group',
+          foodGroup: groupName
+        });
+      }
     }
   }
 
-  // convert abundance into mean values
   const nodes = [...nodeMap.values()];
-  for (const n of nodes) {
-    n.abundanceMean = n.abundanceCount > 0 ? n.abundanceSum / n.abundanceCount : 0;
-  }
-
-  // scale node radius from abundance
-  applyRadiusScaling(nodes);
-
-  return { nodes, links, topN, minValue };
+  return { nodes, links, topN, minValue, foods, foodGroups: groupNames };
 }
 
-function applyRadiusScaling(nodes) {
-  const sampleNodes = nodes.filter(n => n.kind === 'sample');
-  const featureNodes = nodes.filter(n =>
-    ['fatty', 'carbs', 'minerals', 'amino', 'macros'].includes(n.kind)
-  );
-
-  scaleRadiusGroup(sampleNodes, 10, 24, n => n.abundanceSum);
-  scaleRadiusGroup(featureNodes, 7, 18, n => n.abundanceMean);
-
-  // keep category-type nodes fixed
-  for (const n of nodes) {
-    if (['primary', 'secondary', 'processing'].includes(n.kind)) {
-      n.radius = 9;
-    }
-  }
-}
-
-function scaleRadiusGroup(nodes, minR, maxR, accessor) {
-  if (!nodes.length) return;
-
-  const vals = nodes.map(accessor).filter(v => Number.isFinite(v) && v > 0);
-  if (!vals.length) {
-    for (const n of nodes) n.radius = minR;
-    return;
-  }
-
-  const minVal = Math.min(...vals);
-  const maxVal = Math.max(...vals);
-
-  for (const n of nodes) {
-    const raw = accessor(n);
-    if (!Number.isFinite(raw) || raw <= 0) {
-      n.radius = minR;
-      continue;
-    }
-
-    const a = Math.log10(minVal + 1);
-    const b = Math.log10(maxVal + 1);
-    const x = Math.log10(raw + 1);
-
-    const t = b === a ? 0.5 : (x - a) / (b - a);
-    n.radius = minR + t * (maxR - minR);
-  }
-}
     const canvas = document.getElementById('graphCanvas');
     const wrap = document.getElementById('canvasWrap');
     const ctx = canvas.getContext('2d');
@@ -438,14 +476,20 @@ function scaleRadiusGroup(nodes, minR, maxR, accessor) {
 
     function updateStats(meta){
       const counts = graph.nodes.reduce((a, n) => ((a[n.kind] = (a[n.kind] || 0) + 1), a), {});
+      const foodGroupLinks = graph.links.filter(l => l.relation === 'same_group').length;
+      const compoundLinks = graph.links.filter(l => l.relation === 'contains').length;
+      
       statsEl.innerHTML = [
         `<strong>${graph.nodes.length}</strong> nodes`,
-        `<strong>${graph.links.length}</strong> links`,
-        meta ? `Top <strong>${meta.topN}</strong> features per sample, min value <strong>${meta.minValue}</strong>` : '',
-        counts.sample ? `<strong>${counts.sample}</strong> samples` : '',
-        counts.primary ? `<strong>${counts.primary}</strong> primary groups` : '',
-        counts.secondary ? `<strong>${counts.secondary}</strong> secondary groups` : '',
-        counts.processing ? `<strong>${counts.processing}</strong> processing types` : ''
+        `<strong>${graph.links.length}</strong> links (${foodGroupLinks} food-food, ${compoundLinks} food-compound)`,
+        meta ? `Top <strong>${meta.topN}</strong> compounds per food, min value <strong>${meta.minValue}</strong>` : '',
+        counts.sample ? `<strong>${counts.sample}</strong> food samples` : '',
+        graph.foodGroups ? `<strong>${graph.foodGroups.length}</strong> food groups: ${graph.foodGroups.join(', ')}` : '',
+        counts.fatty ? `<strong>${counts.fatty}</strong> fatty acids/lipids` : '',
+        counts.carbs ? `<strong>${counts.carbs}</strong> carbs/sugars` : '',
+        counts.amino ? `<strong>${counts.amino}</strong> amino acids` : '',
+        counts.minerals ? `<strong>${counts.minerals}</strong> minerals` : '',
+        counts.macros ? `<strong>${counts.macros}</strong> macros` : ''
       ].filter(Boolean).join('<br>');
     }
 
@@ -508,35 +552,162 @@ function scaleRadiusGroup(nodes, minR, maxR, accessor) {
       let highlight = null;
       if (hovered || selected) highlight = connectedNodeIds(hovered || selected);
 
-      for (const link of graph.links) {
-        const active = !highlight || highlight.links.has(link);
-        ctx.beginPath();
-        ctx.moveTo(link.source.x, link.source.y);
-        ctx.lineTo(link.target.x, link.target.y);
-        ctx.lineWidth = Math.max(1, Math.log10((link.value || 1) + 1) * 2);
-        ctx.strokeStyle = active ? 'rgba(120,130,150,0.75)' : 'rgba(180,186,198,0.12)';
-        ctx.stroke();
+      // Draw food group cluster backgrounds
+      if (graph.foodGroups && graph.foods) {
+        for (const groupName of graph.foodGroups) {
+          const foodsInGroup = graph.foods.filter(f => f.foodGroup === groupName);
+          if (foodsInGroup.length === 0) continue;
+
+          // Calculate cluster center and radius
+          let centerX = 0, centerY = 0;
+          for (const food of foodsInGroup) {
+            centerX += food.x;
+            centerY += food.y;
+          }
+          centerX /= foodsInGroup.length;
+          centerY /= foodsInGroup.length;
+
+          // Calculate radius to encompass all foods
+          let maxDist = 0;
+          for (const food of foodsInGroup) {
+            const dist = Math.sqrt((food.x - centerX) ** 2 + (food.y - centerY) ** 2);
+            maxDist = Math.max(maxDist, dist + 220); // Include orbital radius
+          }
+
+          // Draw food group background
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, maxDist, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(100,120,180,0.04)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(100,120,180,0.15)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Draw food group label
+          if (transform.scale > 0.4) {
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillStyle = 'rgba(31,36,48,0.5)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(groupName, centerX, centerY - maxDist - 20);
+          }
+        }
       }
 
+      // Draw compound cluster backgrounds
+      if (graph.foods && transform.scale > 0.6) {
+        for (const food of graph.foods) {
+          // Find all compounds connected to this food, grouped by family
+          const familyGroups = {
+            fatty: [],
+            carbs: [],
+            minerals: [],
+            amino: [],
+            macros: []
+          };
+          
+          for (const link of graph.links) {
+            if (link.source.id === food.id && link.target.kind !== 'sample') {
+              const family = link.target.kind;
+              if (familyGroups[family]) {
+                familyGroups[family].push(link.target);
+              }
+            }
+          }
+
+          // Draw a subtle circle around each cluster
+          for (const family in familyGroups) {
+            const compounds = familyGroups[family];
+            if (compounds.length === 0) continue;
+
+            // Calculate cluster center and size
+            let centerX = 0, centerY = 0;
+            for (const c of compounds) {
+              centerX += c.x;
+              centerY += c.y;
+            }
+            centerX /= compounds.length;
+            centerY /= compounds.length;
+
+            // Calculate max distance from center
+            let maxDist = 0;
+            for (const c of compounds) {
+              const dist = Math.sqrt((c.x - centerX) ** 2 + (c.y - centerY) ** 2);
+              maxDist = Math.max(maxDist, dist + c.radius);
+            }
+
+            // Draw cluster background
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, maxDist + 15, 0, Math.PI * 2);
+            const color = COLORS[family] || '#888';
+            ctx.fillStyle = color + '15'; // Very transparent
+            ctx.fill();
+            ctx.strokeStyle = color + '30';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw food-to-food links first (thicker, more visible)
+      for (const link of graph.links) {
+        if (link.relation === 'same_group') {
+          const active = !highlight || (highlight.links.has(link));
+          ctx.beginPath();
+          ctx.moveTo(link.source.x, link.source.y);
+          ctx.lineTo(link.target.x, link.target.y);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = active ? 'rgba(100,120,180,0.3)' : 'rgba(180,186,198,0.1)';
+          ctx.stroke();
+        }
+      }
+
+      // Draw food-to-compound links (very subtle)
+      for (const link of graph.links) {
+        if (link.relation !== 'same_group') {
+          const active = !highlight || highlight.links.has(link);
+          ctx.beginPath();
+          ctx.moveTo(link.source.x, link.source.y);
+          ctx.lineTo(link.target.x, link.target.y);
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = active ? 'rgba(120,130,150,0.25)' : 'rgba(180,186,198,0.08)';
+          ctx.stroke();
+        }
+      }
+
+      // Draw nodes
       for (const node of graph.nodes) {
         const active = !highlight || highlight.nodes.has(node.id);
         const color = COLORS[node.kind] || '#888';
-        const r = node.radius + (((hovered && hovered.id === node.id) || (selected && selected.id === node.id)) ? 4 : 0);
+        const r = node.radius + (((hovered && hovered.id === node.id) || (selected && selected.id === node.id)) ? 3 : 0);
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
         ctx.fillStyle = active ? color : 'rgba(205,210,220,0.25)';
         ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = node.kind === 'sample' ? 3 : 2;
         ctx.strokeStyle = active ? '#ffffff' : 'rgba(255,255,255,0.4)';
         ctx.stroke();
       }
 
+      // Draw labels - food samples always, compounds only when zoomed in or highlighted
+      ctx.textAlign = 'left';
       ctx.font = '12px sans-serif';
       ctx.textBaseline = 'middle';
       for (const node of graph.nodes) {
         const active = !highlight || highlight.nodes.has(node.id);
-        ctx.fillStyle = active ? '#1f2430' : 'rgba(31,36,48,0.25)';
-        ctx.fillText(node.label, node.x + node.radius + 6, node.y);
+        const shouldShowLabel = node.kind === 'sample' || 
+                                transform.scale > 1.2 || 
+                                (hovered && hovered.id === node.id) ||
+                                (selected && selected.id === node.id) ||
+                                (highlight && highlight.nodes.has(node.id));
+        
+        if (shouldShowLabel) {
+          ctx.fillStyle = active ? '#1f2430' : 'rgba(31,36,48,0.25)';
+          const labelX = node.x + node.radius + (node.kind === 'sample' ? 8 : 5);
+          const fontSize = node.kind === 'sample' ? 14 : 11;
+          ctx.font = `${node.kind === 'sample' ? 'bold ' : ''}${fontSize}px sans-serif`;
+          ctx.fillText(node.label, labelX, node.y);
+        }
       }
 
       ctx.restore();
@@ -552,45 +723,67 @@ function scaleRadiusGroup(nodes, minR, maxR, accessor) {
         return;
       }
 
-      const centerX = (wrap.clientWidth / transform.scale) / 2 - transform.x / transform.scale;
-      const centerY = (wrap.clientHeight / transform.scale) / 2 - transform.y / transform.scale;
+      // For the orbital layout, we want minimal physics - just some gentle forces
+      // to keep compounds from overlapping while maintaining their orbital positions
 
-      for (const n of nodes) {
-        if (!n.fixed) {
-          n.vx += (centerX - n.x) * 0.0002;
-          n.vy += (centerY - n.y) * 0.0002;
-        }
-      }
-
+      // Gentle repulsion between non-food nodes that are close
       for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        if (a.fixed || a.kind === 'sample') continue;
+        
         for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j];
-          const dx = b.x - a.x, dy = b.y - a.y;
+          const b = nodes[j];
+          if (b.fixed || b.kind === 'sample') continue;
+          
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
           const dist2 = dx * dx + dy * dy + 0.01;
           const dist = Math.sqrt(dist2);
-          let force = 1600 / dist2;
-          if (a.kind === 'sample' && b.kind === 'sample') force *= 1.7;
-          const fx = (dx / dist) * force, fy = (dy / dist) * force;
-          if (!a.fixed) { a.vx -= fx; a.vy -= fy; }
-          if (!b.fixed) { b.vx += fx; b.vy += fy; }
+          
+          // Only repel if very close
+          if (dist < 40) {
+            const force = 200 / dist2;
+            const fx = (dx / dist) * force;
+            const fy = (dy / dist) * force;
+            a.vx -= fx * 0.3;
+            a.vy -= fy * 0.3;
+            b.vx += fx * 0.3;
+            b.vy += fy * 0.3;
+          }
         }
       }
 
+      // Springs along links - very gentle to maintain orbital structure
       for (const link of links) {
-        const a = link.source, b = link.target;
-        const dx = b.x - a.x, dy = b.y - a.y;
+        const a = link.source;
+        const b = link.target;
+        if (a.fixed && b.fixed) continue;
+        
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const desired = (a.kind === 'sample' || b.kind === 'sample') ? 100 : 80;
-        const spring = (dist - desired) * 0.0025;
-        const fx = (dx / dist) * spring, fy = (dy / dist) * spring;
-        if (!a.fixed) { a.vx += fx; a.vy += fy; }
-        if (!b.fixed) { b.vx -= fx; b.vy -= fy; }
+        
+        // Very gentle spring to keep compounds roughly at their orbit distance
+        const desired = 140;
+        const spring = (dist - desired) * 0.0005;
+        const fx = (dx / dist) * spring;
+        const fy = (dy / dist) * spring;
+        
+        if (!a.fixed) {
+          a.vx += fx * 0.5;
+          a.vy += fy * 0.5;
+        }
+        if (!b.fixed) {
+          b.vx -= fx * 0.5;
+          b.vy -= fy * 0.5;
+        }
       }
 
+      // Apply velocities and damping
       for (const n of nodes) {
         if (!n.fixed) {
-          n.vx *= 0.86;
-          n.vy *= 0.86;
+          n.vx *= 0.85;
+          n.vy *= 0.85;
           n.x += n.vx;
           n.y += n.vy;
         }
